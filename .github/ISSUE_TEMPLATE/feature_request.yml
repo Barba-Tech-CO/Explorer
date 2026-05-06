@@ -1,0 +1,61 @@
+name: Feature request
+description: Suggest a new capability for Explorer.
+title: "feat: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe the problem first, then the proposed solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What user problem does this solve? Who benefits?
+      placeholder: As a Windows user, I want to open multiple folders side-by-side without opening multiple windows.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work from the user's perspective?
+      placeholder: Add tabs above the file list pane, with `⌘+T` to open a new tab and `⌘+W` to close.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about and why they fall short.
+
+  - type: dropdown
+    id: windows-parity
+    attributes:
+      label: Windows Explorer parity
+      description: Does this mirror existing Windows Explorer behavior?
+      options:
+        - "Yes — exists in Win10/11 and we should match"
+        - "Partially — similar to Windows but with a twist"
+        - "No — net-new idea"
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / references
+      description: Screenshots from Windows Explorer or other apps, sketches, links, etc.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: I checked the roadmap (README) and this isn't already planned.
+          required: true

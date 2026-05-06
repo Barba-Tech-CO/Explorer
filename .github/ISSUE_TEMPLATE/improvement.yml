@@ -1,0 +1,57 @@
+name: Improvement
+description: Refactor, performance, code quality, or polish for an existing feature.
+title: "refactor: "
+labels: ["improvement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for changes that don't add new features and don't fix bugs — refactors, performance work, accessibility, polish, etc.
+
+  - type: textarea
+    id: target
+    attributes:
+      label: What should be improved?
+      description: Point to the file, component, or area.
+      placeholder: The address bar re-renders the entire breadcrumb stack on every selection change.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of improvement
+      options:
+        - Performance
+        - Code quality / refactor
+        - Accessibility
+        - UX polish (animations, spacing, copy)
+        - Developer experience (build, tests, tooling)
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+      description: Why is this worth doing now? What's the cost of leaving it as-is?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested approach
+      description: Optional. If you have a direction in mind, sketch it here.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: This is not a bug report or a new feature request (use the dedicated templates for those).
+          required: true

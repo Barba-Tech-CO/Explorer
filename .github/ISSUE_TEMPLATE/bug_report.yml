@@ -1,0 +1,87 @@
+name: Bug report
+description: Report something that is broken or behaving unexpectedly.
+title: "bug: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in the sections below — the more detail, the faster we can fix it.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, concise description of the bug.
+      placeholder: When I click the chevron next to a breadcrumb segment, the dropdown is empty even though sibling folders exist.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the bug.
+      placeholder: |
+        1. Open Explorer.
+        2. Navigate to `/Users/<me>/Documents`.
+        3. Click the chevron `▾` next to `Documents` in the address bar.
+        4. Observe empty dropdown.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The dropdown should list sibling folders of `Documents`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: The dropdown opens empty.
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 14.5 (Sonoma)
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Explorer version / commit
+      description: Release tag (e.g. `v1.0.0`) or commit hash if running from source.
+      placeholder: v1.0.0 or 1482d67
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      description: Paste any relevant logs from Console.app or Xcode. Use code blocks.
+      render: shell
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots / screen recording
+      description: Drag & drop images or videos here if helpful.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: I'm running a supported macOS version (14+).
+          required: true
