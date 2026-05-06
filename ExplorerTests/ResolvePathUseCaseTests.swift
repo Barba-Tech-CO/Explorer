@@ -25,10 +25,11 @@ struct ResolvePathUseCaseTests {
   }
 
   @Test func absoluteDirectoryResolves() async {
-    let (useCase, _) = makeSUT(kinds: ["/etc": .directory])
-    let result = await useCase.execute(rawInput: "/etc", relativeTo: home)
+    let target = "/Users/test/Documents"
+    let (useCase, _) = makeSUT(kinds: [target: .directory])
+    let result = await useCase.execute(rawInput: target, relativeTo: home)
     if case .success(let folder) = result {
-      #expect(folder.path == "/etc")
+      #expect(folder.path == target)
     } else {
       Issue.record("expected success, got \(result)")
     }
@@ -62,8 +63,9 @@ struct ResolvePathUseCaseTests {
   }
 
   @Test func filePathFailsAsNotADirectory() async {
-    let (useCase, _) = makeSUT(kinds: ["/etc/hosts": .file])
-    let result = await useCase.execute(rawInput: "/etc/hosts", relativeTo: home)
+    let target = "/Users/test/note.txt"
+    let (useCase, _) = makeSUT(kinds: [target: .file])
+    let result = await useCase.execute(rawInput: target, relativeTo: home)
     #expect(result == .failure(.notADirectory))
   }
 }
