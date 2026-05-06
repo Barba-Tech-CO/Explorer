@@ -11,7 +11,8 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   var stubbedKinds: [String: FilesystemEntryKind] = [:] {
     didSet { stubbedKinds = stubbedKinds.reduce(into: [:]) { $0[Self.normalize($1.key)] = $1.value } }
   }
-  var stubbedSubfolders: [String: [Folder]] = [:]
+  var stubbedSubfolders: [String: Result<[Folder], FilesystemError>] = [:]
+  var stubbedContents: [String: Result<[FSEntry], FilesystemError>] = [:]
 
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
@@ -23,8 +24,12 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
     stubbedKinds[Self.normalize(url.path(percentEncoded: false))] ?? .missing
   }
 
-  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemRepositoryError> {
-    .success(stubbedSubfolders[Self.normalize(folder.path)] ?? [])
+  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError> {
+    stubbedSubfolders[Self.normalize(folder.path)] ?? .success([])
+  }
+
+  func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
+    stubbedContents[Self.normalize(folder.path)] ?? .success([])
   }
 
   private static func normalize(_ path: String) -> String {

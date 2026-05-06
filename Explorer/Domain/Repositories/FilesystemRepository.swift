@@ -8,14 +8,12 @@
 
 import Foundation
 
-enum FilesystemRepositoryError: Error, Equatable {
-  case unreadable
-}
-
 protocol FilesystemRepository: Sendable {
   var home: Folder { get }
 
   func entryKind(at url: URL) async -> FilesystemEntryKind
 
-  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemRepositoryError>
+  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError>
+
+  func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError>
 }
