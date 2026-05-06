@@ -23,7 +23,7 @@ final class SiblingDropdownViewModel {
   }
 
   func load(parent: Folder) async {
-    switch await useCase.execute(parent: parent) {
+    switch await useCase.listSubfolders(of: parent) {
     case .success(let folders) where folders.isEmpty:
       state = .empty
     case .success(let folders):

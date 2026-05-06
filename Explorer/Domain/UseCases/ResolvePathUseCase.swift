@@ -21,7 +21,7 @@ struct ResolvePathUseCase: Sendable {
     self.repository = repository
   }
 
-  func execute(rawInput: String, relativeTo base: Folder) async -> Result<Folder, ResolvePathError> {
+  func resolvePath(rawInput: String, relativeTo base: Folder) async -> Result<Folder, ResolvePathError> {
     let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return .failure(.empty) }
 

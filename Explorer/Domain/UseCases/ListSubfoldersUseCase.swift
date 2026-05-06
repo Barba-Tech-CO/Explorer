@@ -12,7 +12,7 @@ struct ListSubfoldersUseCase: Sendable {
     self.repository = repository
   }
 
-  func execute(parent: Folder) async -> Result<[Folder], FilesystemRepositoryError> {
+  func listSubfolders(of parent: Folder) async -> Result<[Folder], FilesystemError> {
     await repository.subfolders(of: parent)
   }
 }

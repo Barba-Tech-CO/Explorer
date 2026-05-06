@@ -36,7 +36,7 @@ final class AddressBarViewModel {
   }
 
   func commit(relativeTo base: Folder) async -> Folder? {
-    switch await resolvePath.execute(rawInput: draft, relativeTo: base) {
+    switch await resolvePath.resolvePath(rawInput: draft, relativeTo: base) {
     case .success(let folder):
       mode = .breadcrumbs
       showInvalid = false

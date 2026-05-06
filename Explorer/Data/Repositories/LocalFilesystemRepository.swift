@@ -31,25 +31,66 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
     return isDir.boolValue ? .directory : .file
   }
 
-  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemRepositoryError> {
+  func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError> {
+    await readDirectory(folder).map { urls in
+      urls
+        .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true }
+        .sorted { lhs, rhs in
+          lhs.lastPathComponent.localizedStandardCompare(rhs.lastPathComponent) == .orderedAscending
+        }
+        .map(Folder.init(url:))
+    }
+  }
+
+  func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
+    await readDirectory(folder).map { urls in
+      urls
+        .map(makeEntry(from:))
+        .sorted { lhs, rhs in
+          if lhs.isDirectory != rhs.isDirectory { return lhs.isDirectory }
+          return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+        }
+    }
+  }
+
+  // MARK: - Private
+
+  private static let listingResourceKeys: Set<URLResourceKey> = [
+    .isDirectoryKey,
+    .fileSizeKey,
+    .contentModificationDateKey,
+    .typeIdentifierKey,
+    .nameKey,
+  ]
+
+  private func readDirectory(_ folder: Folder) async -> Result<[URL], FilesystemError> {
     do {
       let entries = try fileManager.contentsOfDirectory(
         at: folder.url,
-        includingPropertiesForKeys: [.isDirectoryKey, .isHiddenKey],
+        includingPropertiesForKeys: Array(Self.listingResourceKeys),
         options: [.skipsHiddenFiles, .skipsPackageDescendants]
       )
-      let dirs = entries.filter { entry in
-        (try? entry.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-      }
-      let sorted = dirs.sorted { lhs, rhs in
-        lhs.lastPathComponent.localizedStandardCompare(rhs.lastPathComponent) == .orderedAscending
-      }
-      return .success(sorted.map(Folder.init(url:)))
+      return .success(entries)
     } catch {
+      let mapped = FilesystemErrorMapper.map(error)
       log.error(
-        "subfolders failed at \(folder.path, privacy: .public): \(error.localizedDescription, privacy: .public)"
+        "readDirectory failed at \(folder.path, privacy: .public) → \(String(describing: mapped), privacy: .public): \(error.localizedDescription, privacy: .public)"
       )
-      return .failure(.unreadable)
+      return .failure(mapped)
     }
+  }
+
+  private func makeEntry(from url: URL) -> FSEntry {
+    let values = try? url.resourceValues(forKeys: Self.listingResourceKeys)
+    let isDirectory = values?.isDirectory ?? false
+    let size = values?.fileSize.map { Int64($0) }
+    return FSEntry(
+      url: url,
+      name: values?.name ?? url.lastPathComponent,
+      isDirectory: isDirectory,
+      size: isDirectory ? nil : size,
+      modificationDate: values?.contentModificationDate,
+      typeIdentifier: values?.typeIdentifier
+    )
   }
 }
