@@ -19,8 +19,18 @@ struct Folder: Hashable, Identifiable, Sendable {
   }
 
   var id: URL { url }
-  var path: String { url.path(percentEncoded: false) }
   var isRoot: Bool { url.pathComponents == ["/"] }
+
+  /// Canonical filesystem path: never carries a trailing slash (except for the
+  /// root "/"). Stable across macOS versions, where `URL.path(percentEncoded:)`
+  /// disagrees on whether to keep the trailing slash for directory URLs.
+  var path: String {
+    let raw = url.path(percentEncoded: false)
+    if raw.count > 1, raw.hasSuffix("/") {
+      return String(raw.dropLast())
+    }
+    return raw
+  }
 
   var name: String {
     isRoot ? "Macintosh HD" : url.lastPathComponent
