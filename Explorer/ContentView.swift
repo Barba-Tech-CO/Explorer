@@ -6,54 +6,38 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+  let dependencies: AppDependencies
 
-    var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
+  @State private var navigation: NavigationState
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+  init(dependencies: AppDependencies) {
+    self.dependencies = dependencies
+    self._navigation = State(
+      initialValue: NavigationState(initial: dependencies.repository.home)
+    )
+  }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+  var body: some View {
+    VStack(spacing: 0) {
+      AddressBarView(
+        navigation: navigation,
+        listSubfolders: dependencies.listSubfolders,
+        resolvePath: dependencies.resolvePath
+      )
+      .padding(.horizontal, 12)
+      .padding(.vertical, 8)
+
+      Divider()
+
+      ContentPlaceholderView(folder: navigation.current)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+    .frame(minWidth: 720, minHeight: 480)
+  }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+  ContentView(dependencies: .live())
 }
