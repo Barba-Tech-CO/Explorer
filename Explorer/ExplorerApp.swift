@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct ExplorerApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+  private let dependencies = AppDependencies.live()
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView(dependencies: dependencies)
     }
+  }
 }

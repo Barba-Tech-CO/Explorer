@@ -8,23 +8,36 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var navigation = NavigationState()
+  let dependencies: AppDependencies
 
-    var body: some View {
-        VStack(spacing: 0) {
-            AddressBarView(navigation: navigation)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+  @State private var navigation: NavigationState
 
-            Divider()
+  init(dependencies: AppDependencies) {
+    self.dependencies = dependencies
+    self._navigation = State(
+      initialValue: NavigationState(initial: dependencies.repository.home)
+    )
+  }
 
-            ContentPlaceholderView(url: navigation.currentURL)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .frame(minWidth: 720, minHeight: 480)
+  var body: some View {
+    VStack(spacing: 0) {
+      AddressBarView(
+        navigation: navigation,
+        listSubfolders: dependencies.listSubfolders,
+        resolvePath: dependencies.resolvePath
+      )
+      .padding(.horizontal, 12)
+      .padding(.vertical, 8)
+
+      Divider()
+
+      ContentPlaceholderView(folder: navigation.current)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+    .frame(minWidth: 720, minHeight: 480)
+  }
 }
 
 #Preview {
-    ContentView()
+  ContentView(dependencies: .live())
 }

@@ -9,21 +9,21 @@
 import SwiftUI
 
 struct ContentPlaceholderView: View {
-    let url: URL
+  let folder: Folder
 
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "folder")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            Text(url.path(percentEncoded: false))
-                .font(.system(.body, design: .monospaced))
-                .textSelection(.enabled)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-            Text("File list pane lands in a follow-up commit.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
+  var body: some View {
+    VStack(spacing: 8) {
+      Image(systemName: "folder")
+        .font(.system(size: 48))
+        .foregroundStyle(.secondary)
+      Text(folder.path)
+        .font(.system(.body, design: .monospaced))
+        .textSelection(.enabled)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 24)
+      Text("File list pane lands in a follow-up commit.")
+        .font(.caption)
+        .foregroundStyle(.secondary)
     }
+  }
 }
