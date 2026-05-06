@@ -6,6 +6,6 @@
 import Foundation
 
 enum AddressBarMode: Equatable {
-    case breadcrumbs
-    case editing
+  case breadcrumbs
+  case editing
 }
