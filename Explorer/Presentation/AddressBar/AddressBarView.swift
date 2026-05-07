@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import AppKit
+import Combine
 
 struct AddressBarView: View {
   @Bindable var navigation: NavigationState
@@ -15,6 +17,8 @@ struct AddressBarView: View {
 
   @State private var viewModel: AddressBarViewModel
   @State private var shakeOffset: CGFloat = 0
+  @State private var barFrame: CGRect = .zero
+  @State private var mouseMonitor: Any?
 
   init(
     navigation: NavigationState,
@@ -50,7 +54,29 @@ struct AddressBarView: View {
               viewModel.showInvalid ? Color.red : Color.secondary.opacity(0.25)
             )
         )
+        .background(
+          GeometryReader { proxy in
+            Color.clear.preference(
+              key: BarFrameKey.self,
+              value: proxy.frame(in: .global)
+            )
+          }
+        )
+        .onPreferenceChange(BarFrameKey.self) { barFrame = $0 }
         .offset(x: shakeOffset)
+    }
+    .onChange(of: viewModel.mode) { _, mode in
+      if mode == .editing {
+        installOutsideClickMonitor()
+      } else {
+        removeOutsideClickMonitor()
+      }
+    }
+    .onDisappear { removeOutsideClickMonitor() }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)
+    ) { _ in
+      if viewModel.mode == .editing { viewModel.cancel() }
     }
   }
 
@@ -65,7 +91,6 @@ struct AddressBarView: View {
           get: { viewModel.draft },
           set: { viewModel.draft = $0 }
         ),
-        isInvalid: viewModel.showInvalid,
         onCommit: commitDraft,
         onCancel: viewModel.cancel
       )
@@ -110,5 +135,38 @@ struct AddressBarView: View {
         withAnimation(.easeInOut(duration: 0.06)) { shakeOffset = 0 }
       }
     }
+  }
+
+  private func installOutsideClickMonitor() {
+    guard mouseMonitor == nil else { return }
+    mouseMonitor = NSEvent.addLocalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { event in
+      // Convert AppKit's bottom-left origin window coords to SwiftUI's
+      // top-left .global space so containment matches the captured bar frame.
+      guard let contentHeight = event.window?.contentView?.frame.height else {
+        return event
+      }
+      let p = event.locationInWindow
+      let inSwiftUI = CGPoint(x: p.x, y: contentHeight - p.y)
+      if !barFrame.contains(inSwiftUI) {
+        DispatchQueue.main.async { viewModel.cancel() }
+      }
+      return event
+    }
+  }
+
+  private func removeOutsideClickMonitor() {
+    if let monitor = mouseMonitor {
+      NSEvent.removeMonitor(monitor)
+      mouseMonitor = nil
+    }
+  }
+}
+
+private struct BarFrameKey: PreferenceKey {
+  static let defaultValue: CGRect = .zero
+  static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+    value = nextValue()
   }
 }
