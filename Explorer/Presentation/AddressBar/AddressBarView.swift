@@ -8,7 +8,6 @@
 
 import SwiftUI
 import AppKit
-import Combine
 
 struct AddressBarView: View {
   @Bindable var navigation: NavigationState
@@ -19,6 +18,7 @@ struct AddressBarView: View {
   @State private var shakeOffset: CGFloat = 0
   @State private var barFrame: CGRect = .zero
   @State private var mouseMonitor: Any?
+  @Environment(\.controlActiveState) private var controlActiveState
 
   init(
     navigation: NavigationState,
@@ -74,10 +74,8 @@ struct AddressBarView: View {
       }
     }
     .onDisappear { removeOutsideClickMonitor() }
-    .onReceive(
-      NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)
-    ) { _ in
-      if viewModel.mode == .editing { viewModel.cancel() }
+    .onChange(of: controlActiveState) { _, state in
+      if state != .key, viewModel.mode == .editing { viewModel.cancel() }
     }
   }
 

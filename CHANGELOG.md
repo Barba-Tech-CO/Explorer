@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 - App Sandbox disabled on Debug and Release configurations; the app now reads the filesystem directly via `FileManager` (matches the chosen non-Mac-App-Store distribution path).
 - `FilesystemRepository.subfolders(of:)` now fails with `FilesystemError` instead of the removed `FilesystemRepositoryError.unreadable`.
-- Address bar exits edit mode and restores breadcrumbs when the path field loses focus (clicking outside the bar or switching apps), discarding the draft. Previously the field stayed in edit mode until Esc or Enter.
+- Address bar exits edit mode and restores breadcrumbs when clicking outside the bar's chrome or when its window stops being the key window (app switch, another window taking key), discarding the draft. Previously the field stayed in edit mode until Esc or Enter.
 
 ### Removed
 - `FilesystemRepositoryError` (replaced by `FilesystemError`).
