@@ -62,7 +62,17 @@ struct AddressBarView: View {
             )
           }
         )
-        .onPreferenceChange(BarFrameKey.self) { barFrame = $0 }
+        .onPreferenceChange(BarFrameKey.self) { newValue in
+          // Round and skip sub-pixel deltas so layout-driven jitter doesn't
+          // re-fire state writes mid-crossfade.
+          let rounded = CGRect(
+            x: newValue.minX.rounded(),
+            y: newValue.minY.rounded(),
+            width: newValue.width.rounded(),
+            height: newValue.height.rounded()
+          )
+          if barFrame != rounded { barFrame = rounded }
+        }
         .offset(x: shakeOffset)
         .animation(.easeInOut(duration: 0.18), value: viewModel.mode)
     }
