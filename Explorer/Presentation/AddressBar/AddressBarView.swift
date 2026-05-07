@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import AppKit
 
 struct AddressBarView: View {
   @Bindable var navigation: NavigationState
@@ -15,6 +16,9 @@ struct AddressBarView: View {
 
   @State private var viewModel: AddressBarViewModel
   @State private var shakeOffset: CGFloat = 0
+  @State private var barFrame: CGRect = .zero
+  @State private var mouseMonitor: Any?
+  @Environment(\.controlActiveState) private var controlActiveState
 
   init(
     navigation: NavigationState,
@@ -50,7 +54,38 @@ struct AddressBarView: View {
               viewModel.showInvalid ? Color.red : Color.secondary.opacity(0.25)
             )
         )
+        .background(
+          GeometryReader { proxy in
+            Color.clear.preference(
+              key: BarFrameKey.self,
+              value: proxy.frame(in: .global)
+            )
+          }
+        )
+        .onPreferenceChange(BarFrameKey.self) { newValue in
+          // Round and skip sub-pixel deltas so layout-driven jitter doesn't
+          // re-fire state writes mid-crossfade.
+          let rounded = CGRect(
+            x: newValue.minX.rounded(),
+            y: newValue.minY.rounded(),
+            width: newValue.width.rounded(),
+            height: newValue.height.rounded()
+          )
+          if barFrame != rounded { barFrame = rounded }
+        }
         .offset(x: shakeOffset)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.mode)
+    }
+    .onChange(of: viewModel.mode) { _, mode in
+      if mode == .editing {
+        installOutsideClickMonitor()
+      } else {
+        removeOutsideClickMonitor()
+      }
+    }
+    .onDisappear { removeOutsideClickMonitor() }
+    .onChange(of: controlActiveState) { _, state in
+      if state != .key, viewModel.mode == .editing { viewModel.cancel() }
     }
   }
 
@@ -59,16 +94,17 @@ struct AddressBarView: View {
     switch viewModel.mode {
     case .breadcrumbs:
       breadcrumbs
+        .transition(.opacity)
     case .editing:
       PathEditField(
         text: Binding(
           get: { viewModel.draft },
           set: { viewModel.draft = $0 }
         ),
-        isInvalid: viewModel.showInvalid,
         onCommit: commitDraft,
         onCancel: viewModel.cancel
       )
+      .transition(.opacity)
     }
   }
 
@@ -110,5 +146,38 @@ struct AddressBarView: View {
         withAnimation(.easeInOut(duration: 0.06)) { shakeOffset = 0 }
       }
     }
+  }
+
+  private func installOutsideClickMonitor() {
+    guard mouseMonitor == nil else { return }
+    mouseMonitor = NSEvent.addLocalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { event in
+      // Convert AppKit's bottom-left origin window coords to SwiftUI's
+      // top-left .global space so containment matches the captured bar frame.
+      guard let contentHeight = event.window?.contentView?.frame.height else {
+        return event
+      }
+      let p = event.locationInWindow
+      let inSwiftUI = CGPoint(x: p.x, y: contentHeight - p.y)
+      if !barFrame.contains(inSwiftUI) {
+        DispatchQueue.main.async { viewModel.cancel() }
+      }
+      return event
+    }
+  }
+
+  private func removeOutsideClickMonitor() {
+    if let monitor = mouseMonitor {
+      NSEvent.removeMonitor(monitor)
+      mouseMonitor = nil
+    }
+  }
+}
+
+private struct BarFrameKey: PreferenceKey {
+  static let defaultValue: CGRect = .zero
+  static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+    value = nextValue()
   }
 }
