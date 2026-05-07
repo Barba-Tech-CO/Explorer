@@ -22,6 +22,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Removed
 - `FilesystemRepositoryError` (replaced by `FilesystemError`).
 
+### Fixed
+- Sibling-folders popover now sizes to its content: width adapts to the longest folder name (clamped 180–480pt) and height adapts to the row count (clamped to 320pt with scrolling beyond that). Previously it stayed clipped at a fixed minimum regardless of how many entries were listed.
+
 ---
 
 ## [0.0.1] — 2026-05-06
