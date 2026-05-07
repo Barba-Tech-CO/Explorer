@@ -148,6 +148,7 @@ struct AddressBarView: View {
       if let folder = await viewModel.commit(relativeTo: navigation.current) {
         navigation.navigate(to: folder)
       } else {
+        NSSound.beep()
         triggerShake()
       }
     }

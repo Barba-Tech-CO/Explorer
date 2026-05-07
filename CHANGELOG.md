@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - App Sandbox disabled on Debug and Release configurations; the app now reads the filesystem directly via `FileManager` (matches the chosen non-Mac-App-Store distribution path).
 - `FilesystemRepository.subfolders(of:)` now fails with `FilesystemError` instead of the removed `FilesystemRepositoryError.unreadable`.
 - Address bar exits edit mode and restores breadcrumbs when clicking outside the bar's chrome or when its window stops being the key window (app switch, another window taking key), discarding the draft. Previously the field stayed in edit mode until Esc or Enter.
+- Invalid path commits in the address bar now play the system alert beep alongside the existing shake + red border feedback.
 
 ### Removed
 - `FilesystemRepositoryError` (replaced by `FilesystemError`).
