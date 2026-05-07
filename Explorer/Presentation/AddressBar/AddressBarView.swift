@@ -41,6 +41,13 @@ struct AddressBarView: View {
         .frame(width: 0, height: 0)
         .accessibilityHidden(true)
 
+      Button("Paste path", action: pastePath)
+        .keyboardShortcut("v", modifiers: .command)
+        .disabled(viewModel.mode != .editing)
+        .opacity(0)
+        .frame(width: 0, height: 0)
+        .accessibilityHidden(true)
+
       content
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
@@ -125,6 +132,15 @@ struct AddressBarView: View {
 
   private func enterEditMode() {
     viewModel.enterEditMode(currentPath: navigation.current.path)
+  }
+
+  private func pastePath() {
+    guard viewModel.mode == .editing,
+          let pasted = NSPasteboard.general.string(forType: .string)
+    else { return }
+    let trimmed = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return }
+    viewModel.draft = trimmed
   }
 
   private func commitDraft() {

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `FilesystemRepository.listContents(of:)` returning sorted `[FSEntry]` (directories first, localized name comparison) with hidden files and package descendants skipped.
 - `FilesystemError` with `denied`, `notFound`, and `io` cases; `LocalFilesystemRepository` maps `NSCocoaErrorDomain`/`NSPOSIXErrorDomain` failures to the appropriate case.
 - Address bar breadcrumbs now collapse responsively when the bar runs out of room: the root segment and the current folder stay visible while middle ancestors fold behind a `…` button that opens a popover listing the omitted folders for direct navigation. Layout reacts to window resizes and path changes.
+- Address bar now intercepts `⌘+V` while in edit mode: the clipboard text replaces the current draft so a pasted path is always editable before navigating with Enter. The shortcut is inactive in breadcrumbs mode.
 
 ### Changed
 - App Sandbox disabled on Debug and Release configurations; the app now reads the filesystem directly via `FileManager` (matches the chosen non-Mac-App-Store distribution path).
