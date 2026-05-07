@@ -73,16 +73,12 @@ struct AddressBarView: View {
   }
 
   private var breadcrumbs: some View {
-    let segments = PathSegment.segments(for: navigation.current)
-    return HStack(spacing: 0) {
-      ForEach(Array(segments.enumerated()), id: \.element.id) { index, segment in
-        BreadcrumbSegmentView(
-          segment: segment,
-          isFirst: index == 0,
-          listSubfolders: listSubfolders,
-          onSelect: { navigation.navigate(to: $0) }
-        )
-      }
+    HStack(spacing: 0) {
+      BreadcrumbsBarView(
+        segments: PathSegment.segments(for: navigation.current),
+        listSubfolders: listSubfolders,
+        onSelect: { navigation.navigate(to: $0) }
+      )
       Spacer(minLength: 12)
         .contentShape(Rectangle())
         .onTapGesture(perform: enterEditMode)
