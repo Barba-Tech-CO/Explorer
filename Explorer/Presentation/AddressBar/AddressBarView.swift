@@ -34,6 +34,23 @@ struct AddressBarView: View {
   }
 
   var body: some View {
+    VStack(spacing: 6) {
+      bar
+      if viewModel.showPermissionHint {
+        PermissionHintBanner(
+          onOpenSettings: openTCCSettings,
+          onDismiss: viewModel.dismissPermissionHint
+        )
+        .transition(.move(edge: .top).combined(with: .opacity))
+      }
+    }
+    .animation(.easeInOut(duration: 0.18), value: viewModel.showPermissionHint)
+    .onChange(of: navigation.current) { _, _ in
+      viewModel.dismissPermissionHint()
+    }
+  }
+
+  private var bar: some View {
     ZStack {
       Button("Edit address bar", action: enterEditMode)
         .keyboardShortcut("l", modifiers: .command)
@@ -141,6 +158,15 @@ struct AddressBarView: View {
     let trimmed = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
     viewModel.draft = trimmed
+  }
+
+  private func openTCCSettings() {
+    if let url = URL(
+      string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"
+    ) {
+      NSWorkspace.shared.open(url)
+    }
+    viewModel.dismissPermissionHint()
   }
 
   private func commitDraft() {

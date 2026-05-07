@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `FilesystemError` with `denied`, `notFound`, and `io` cases; `LocalFilesystemRepository` maps `NSCocoaErrorDomain`/`NSPOSIXErrorDomain` failures to the appropriate case.
 - Address bar breadcrumbs now collapse responsively when the bar runs out of room: the root segment and the current folder stay visible while middle ancestors fold behind a `…` button that opens a popover listing the omitted folders for direct navigation. Layout reacts to window resizes and path changes.
 - Address bar now intercepts `⌘+V` while in edit mode: the clipboard text replaces the current draft so a pasted path is always editable before navigating with Enter. The shortcut is inactive in breadcrumbs mode.
+- Permission hint banner under the address bar: when an absolute-looking path (`/...` or `~/...`) fails to resolve, an advisory banner appears with a deep link to System Settings → Privacy & Security → Full Disk Access. Banner auto-clears on successful navigation, on re-entering edit mode, when dismissed, or after opening Settings. Worded as a hint rather than a verdict because macOS' TCC layer reports protected paths as not-found rather than denied, so explicit detection isn't possible.
 
 ### Changed
 - App Sandbox disabled on Debug and Release configurations; the app now reads the filesystem directly via `FileManager` (matches the chosen non-Mac-App-Store distribution path).
