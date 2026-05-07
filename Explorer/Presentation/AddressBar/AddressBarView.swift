@@ -64,6 +64,7 @@ struct AddressBarView: View {
         )
         .onPreferenceChange(BarFrameKey.self) { barFrame = $0 }
         .offset(x: shakeOffset)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.mode)
     }
     .onChange(of: viewModel.mode) { _, mode in
       if mode == .editing {
@@ -85,6 +86,7 @@ struct AddressBarView: View {
     switch viewModel.mode {
     case .breadcrumbs:
       breadcrumbs
+        .transition(.opacity)
     case .editing:
       PathEditField(
         text: Binding(
@@ -94,6 +96,7 @@ struct AddressBarView: View {
         onCommit: commitDraft,
         onCancel: viewModel.cancel
       )
+      .transition(.opacity)
     }
   }
 
