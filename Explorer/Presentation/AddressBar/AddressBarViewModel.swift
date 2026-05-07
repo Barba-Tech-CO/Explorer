@@ -56,8 +56,10 @@ final class AddressBarViewModel {
       showInvalid = true
       // TCC is opaque: macOS reports protected paths as not-found rather than
       // denied, so we surface the hint whenever an absolute-looking path
-      // can't be resolved. Real typos still trigger it, but the wording
-      // makes it clear it's a hint, not a verdict.
+      // can't be resolved. Reset first so unrelated failures (.empty,
+      // .notADirectory, or .notFound on a relative draft) clear a stale
+      // banner from a previous attempt.
+      showPermissionHint = false
       if case .notFound = error, isAbsoluteLooking {
         showPermissionHint = true
       }
