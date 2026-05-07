@@ -144,7 +144,7 @@ struct AddressBarView: View {
   }
 
   private func commitDraft() {
-    Task {
+    Task { @MainActor in
       if let folder = await viewModel.commit(relativeTo: navigation.current) {
         navigation.navigate(to: folder)
       } else {
