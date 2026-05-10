@@ -12,25 +12,75 @@ import AppKit
 
 struct FileListView: View {
   @Bindable var navigation: NavigationState
+  let viewMode: FileListViewMode
+  let searchQuery: String
+  let volumeCapacity: VolumeCapacityUseCase
 
   @State private var viewModel: FileListViewModel
   @State private var sortOrder: [KeyPathComparator<FSEntry>] = [
     KeyPathComparator(\.directorySortKey, order: .forward),
     KeyPathComparator(\.name, order: .forward),
   ]
+  @State private var volumeFreeBytes: Int64?
 
-  init(navigation: NavigationState, listContents: ListContentsUseCase) {
+  init(
+    navigation: NavigationState,
+    listContents: ListContentsUseCase,
+    viewMode: FileListViewMode,
+    searchQuery: String,
+    volumeCapacity: VolumeCapacityUseCase
+  ) {
     self.navigation = navigation
+    self.viewMode = viewMode
+    self.searchQuery = searchQuery
+    self.volumeCapacity = volumeCapacity
     self._viewModel = State(
       initialValue: FileListViewModel(listContents: listContents)
     )
   }
 
   var body: some View {
-    content
-      .task(id: navigation.current) {
-        await viewModel.load(navigation.current)
-      }
+    VStack(spacing: 0) {
+      content
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      Divider()
+
+      StatusBarView(
+        entries: viewModel.entries,
+        selection: viewModel.selection,
+        volumeFreeBytes: volumeFreeBytes
+      )
+    }
+    .task(id: navigation.current) {
+      await viewModel.load(navigation.current)
+    }
+    .task(id: navigation.current) {
+      // Reset before awaiting so the previous folder's value isn't shown
+      // alongside the new folder while the new lookup is in flight.
+      volumeFreeBytes = nil
+      let requested = navigation.current
+      let bytes = await volumeCapacity.freeBytes(at: requested)
+      // Guard against a stale write: `URL.resourceValues` isn't cancellable,
+      // so a fast back-and-forth navigation can let the previous fetch
+      // resolve after the task was cancelled and overwrite the new folder's
+      // value.
+      guard !Task.isCancelled, requested == navigation.current else { return }
+      volumeFreeBytes = bytes
+    }
+  }
+
+  private var trimmedQuery: String {
+    searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var hasActiveSearch: Bool { !trimmedQuery.isEmpty }
+
+  private var filteredEntries: [FSEntry] {
+    guard hasActiveSearch else { return viewModel.entries }
+    return viewModel.entries.filter {
+      $0.name.localizedCaseInsensitiveContains(trimmedQuery)
+    }
   }
 
   @ViewBuilder
@@ -42,8 +92,38 @@ struct FileListView: View {
     case .failed(let error):
       FileListFailureView(error: error)
     case .loaded:
-      table
+      loadedContent
     }
+  }
+
+  @ViewBuilder
+  private var loadedContent: some View {
+    if sortedEntries.isEmpty {
+      emptyState
+    } else {
+      switch viewMode {
+      case .details:
+        table
+      case .largeIcons:
+        LargeIconsView(
+          entries: sortedEntries,
+          selection: $viewModel.selection,
+          onOpen: open
+        )
+      }
+    }
+  }
+
+  private var emptyState: some View {
+    VStack(spacing: 6) {
+      Image(systemName: hasActiveSearch ? "magnifyingglass" : "tray")
+        .font(.system(size: 32, weight: .light))
+        .foregroundStyle(.secondary)
+      Text(hasActiveSearch ? "No matches" : "This folder is empty")
+        .font(.headline)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   private var table: some View {
@@ -60,11 +140,12 @@ struct FileListView: View {
             .foregroundStyle(entry.isDirectory ? Color.accentColor : .secondary)
         }
         .help(entry.name)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
-        // Table eats plain `onTapGesture(count: 2)` for its own row-selection
-        // handling. A simultaneous gesture runs alongside selection instead of
-        // racing with it, so double-click reliably reaches us on macOS.
+        // No `.contentShape(Rectangle())` here on purpose: extending the hit
+        // area to the full cell width breaks NSTableView's single-click row
+        // selection — macOS routes the click into the cell's gesture, which
+        // only listens for count==2, so the "select" event is dropped.
+        // `simultaneousGesture` keeps the double-click flowing alongside
+        // the table's own click handling instead of racing with it.
         .simultaneousGesture(
           TapGesture(count: 2).onEnded { open(entry) }
         )
@@ -95,7 +176,7 @@ struct FileListView: View {
   }
 
   private var sortedEntries: [FSEntry] {
-    viewModel.entries.sorted(using: sortOrder)
+    filteredEntries.sorted(using: sortOrder)
   }
 
   private func open(_ entry: FSEntry) {

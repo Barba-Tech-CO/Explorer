@@ -53,6 +53,13 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
     }
   }
 
+  func volumeFreeBytes(at folder: Folder) async -> Int64? {
+    let values = try? folder.url.resourceValues(
+      forKeys: [.volumeAvailableCapacityKey]
+    )
+    return values?.volumeAvailableCapacity.map { Int64($0) }
+  }
+
   // MARK: - Private
 
   private static let listingResourceKeys: Set<URLResourceKey> = [

@@ -13,6 +13,7 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   }
   var stubbedSubfolders: [String: Result<[Folder], FilesystemError>] = [:]
   var stubbedContents: [String: Result<[FSEntry], FilesystemError>] = [:]
+  var stubbedVolumeFreeBytes: [String: Int64?] = [:]
 
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
@@ -30,6 +31,10 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
 
   func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
     stubbedContents[Self.normalize(folder.path)] ?? .success([])
+  }
+
+  func volumeFreeBytes(at folder: Folder) async -> Int64? {
+    stubbedVolumeFreeBytes[Self.normalize(folder.path)] ?? nil
   }
 
   private static func normalize(_ path: String) -> String {
