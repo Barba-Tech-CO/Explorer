@@ -24,7 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		852D6B892FAB71EC0031B93F /* Explorer-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Explorer-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		852D6B892FAB71EC0031B93F /* Explorer App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Explorer App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		852D6B982FAB71EC0031B93F /* ExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		852D6BA22FAB71EC0031B93F /* ExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,7 +85,7 @@
 		852D6B8A2FAB71EC0031B93F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				852D6B892FAB71EC0031B93F /* Explorer-App.app */,
+				852D6B892FAB71EC0031B93F /* Explorer App.app */,
 				852D6B982FAB71EC0031B93F /* ExplorerTests.xctest */,
 				852D6BA22FAB71EC0031B93F /* ExplorerUITests.xctest */,
 			);
@@ -114,7 +114,7 @@
 			packageProductDependencies = (
 			);
 			productName = Explorer;
-			productReference = 852D6B892FAB71EC0031B93F /* Explorer-App.app */;
+			productReference = 852D6B892FAB71EC0031B93F /* Explorer App.app */;
 			productType = "com.apple.product-type.application";
 		};
 		852D6B972FAB71EC0031B93F /* ExplorerTests */ = {
@@ -423,8 +423,6 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Explorer App";
-				INFOPLIST_KEY_CFBundleName = "Explorer App";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -433,7 +431,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = company.barbatech.Explorer;
-				PRODUCT_NAME = "Explorer-App";
+				PRODUCT_NAME = "Explorer App";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -474,8 +472,6 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Explorer App";
-				INFOPLIST_KEY_CFBundleName = "Explorer App";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -484,7 +480,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = company.barbatech.Explorer;
-				PRODUCT_NAME = "Explorer-App";
+				PRODUCT_NAME = "Explorer App";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -513,7 +509,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Explorer-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Explorer-App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Explorer App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Explorer App";
 			};
 			name = Debug;
 		};
@@ -535,7 +531,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Explorer-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Explorer-App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Explorer App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Explorer App";
 			};
 			name = Release;
 		};
