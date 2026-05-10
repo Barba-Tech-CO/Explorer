@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ## [Unreleased]
 
 ### Added
+- Sidebar split into two sections: **Quick Access** with the canonical user folders (Desktop, Documents, Downloads, Pictures, Music, Movies) plus Home, and **This Mac** listing currently mounted volumes (boot drive first, then external drives in OS order). The This Mac list refreshes automatically on `NSWorkspace.didMountNotification` / `didUnmountNotification`, so plugging or ejecting an external drive updates the sidebar without restarting the app.
+- `FilesystemRepository.quickAccessLocations` and `FilesystemRepository.mountedVolumes()` plus a new `SidebarSourcesUseCase` exposing both to the presentation layer.
 - Initial project documentation: `README.md`, `CHANGELOG.md`.
 - Address bar specification as the product's centerpiece (clickable breadcrumbs + edit mode via `⌘+L`, support for absolute paths, `~`, and relative paths).
 - Roadmap split into v1.0 (core UI), v1.1 (tabs, autocomplete, preview pane, file operations, drag & drop), and v1.2+ (advanced search, recents, persistent favorites, i18n).
