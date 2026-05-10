@@ -14,12 +14,15 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   var stubbedSubfolders: [String: Result<[Folder], FilesystemError>] = [:]
   var stubbedContents: [String: Result<[FSEntry], FilesystemError>] = [:]
   var stubbedVolumeFreeBytes: [String: Int64?] = [:]
+  var stubbedQuickAccessLocations: [Folder] = []
+  var stubbedMountedVolumes: [Folder] = []
 
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
   }
 
   var home: Folder { stubbedHome }
+  var quickAccessLocations: [Folder] { stubbedQuickAccessLocations }
 
   func entryKind(at url: URL) async -> FilesystemEntryKind {
     stubbedKinds[Self.normalize(url.path(percentEncoded: false))] ?? .missing
@@ -35,6 +38,10 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
 
   func volumeFreeBytes(at folder: Folder) async -> Int64? {
     stubbedVolumeFreeBytes[Self.normalize(folder.path)] ?? nil
+  }
+
+  func mountedVolumes() async -> [Folder] {
+    stubbedMountedVolumes
   }
 
   private static func normalize(_ path: String) -> String {

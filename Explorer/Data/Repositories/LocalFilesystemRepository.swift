@@ -21,6 +21,26 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
     Folder(url: fileManager.homeDirectoryForCurrentUser)
   }
 
+  var quickAccessLocations: [Folder] {
+    let directories: [FileManager.SearchPathDirectory] = [
+      .desktopDirectory,
+      .documentDirectory,
+      .downloadsDirectory,
+      .picturesDirectory,
+      .musicDirectory,
+      .moviesDirectory,
+    ]
+    return directories.compactMap { directory in
+      guard let url = try? fileManager.url(
+        for: directory,
+        in: .userDomainMask,
+        appropriateFor: nil,
+        create: false
+      ) else { return nil }
+      return Folder(url: url)
+    }
+  }
+
   func entryKind(at url: URL) async -> FilesystemEntryKind {
     var isDir: ObjCBool = false
     let exists = fileManager.fileExists(
@@ -58,6 +78,32 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
       forKeys: [.volumeAvailableCapacityKey]
     )
     return values?.volumeAvailableCapacity.map { Int64($0) }
+  }
+
+  func mountedVolumes() async -> [Folder] {
+    let urls = fileManager.mountedVolumeURLs(
+      includingResourceValuesForKeys: [
+        .volumeIsInternalKey,
+        .volumeNameKey,
+        .volumeIsBrowsableKey,
+      ],
+      options: [.skipHiddenVolumes]
+    ) ?? []
+
+    let visible = urls.filter { url in
+      // Skip non-browsable volumes (e.g., the recovery image, hidden system
+      // partitions). The internal boot volume always passes both filters.
+      let values = try? url.resourceValues(forKeys: [.volumeIsBrowsableKey])
+      return values?.volumeIsBrowsable ?? true
+    }
+
+    // Boot volume first (mounted at "/"), then external drives in OS order.
+    return visible.sorted { lhs, rhs in
+      let lhsRoot = lhs.path == "/"
+      let rhsRoot = rhs.path == "/"
+      if lhsRoot != rhsRoot { return lhsRoot }
+      return false
+    }.map(Folder.init(url:))
   }
 
   // MARK: - Private
