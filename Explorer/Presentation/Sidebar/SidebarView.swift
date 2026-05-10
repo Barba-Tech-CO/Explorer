@@ -47,7 +47,13 @@ struct SidebarView: View {
     .onReceive(unmountNotification) { _ in Task { await reloadVolumes() } }
   }
 
+  @MainActor
   private func reloadVolumes() async {
+    // @MainActor because `volumes` is `@State` — the unstructured `Task {}`
+    // we kick off from `.onReceive` doesn't inherit the View's main-actor
+    // isolation, so the assignment after `await` could otherwise resume on
+    // a background executor and trip SwiftUI's "publishing changes from
+    // background" runtime warning.
     volumes = await sources.mountedVolumes()
   }
 
