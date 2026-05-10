@@ -130,11 +130,12 @@ struct FileListView: View {
             .foregroundStyle(entry.isDirectory ? Color.accentColor : .secondary)
         }
         .help(entry.name)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
-        // Table eats plain `onTapGesture(count: 2)` for its own row-selection
-        // handling. A simultaneous gesture runs alongside selection instead of
-        // racing with it, so double-click reliably reaches us on macOS.
+        // No `.contentShape(Rectangle())` here on purpose: extending the hit
+        // area to the full cell width breaks NSTableView's single-click row
+        // selection — macOS routes the click into the cell's gesture, which
+        // only listens for count==2, so the "select" event is dropped.
+        // `simultaneousGesture` keeps the double-click flowing alongside
+        // the table's own click handling instead of racing with it.
         .simultaneousGesture(
           TapGesture(count: 2).onEnded { open(entry) }
         )
