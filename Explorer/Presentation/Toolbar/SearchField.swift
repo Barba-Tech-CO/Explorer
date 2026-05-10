@@ -40,8 +40,14 @@ struct SearchField: NSViewRepresentable {
     }
     if focusRequest {
       DispatchQueue.main.async {
-        nsView.window?.makeFirstResponder(nsView)
-        focusRequest = false
+        // Only consume the request when first responder actually moved.
+        // A request that lands before the field is attached to a window
+        // would otherwise be silently dropped, forcing the user to press
+        // ⌘F a second time after the toolbar finishes installing.
+        guard let window = nsView.window else { return }
+        if window.makeFirstResponder(nsView) {
+          focusRequest = false
+        }
       }
     }
   }
