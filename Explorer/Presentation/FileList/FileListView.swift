@@ -14,32 +14,50 @@ struct FileListView: View {
   @Bindable var navigation: NavigationState
   let viewMode: FileListViewMode
   let searchQuery: String
+  let volumeCapacity: VolumeCapacityUseCase
 
   @State private var viewModel: FileListViewModel
   @State private var sortOrder: [KeyPathComparator<FSEntry>] = [
     KeyPathComparator(\.directorySortKey, order: .forward),
     KeyPathComparator(\.name, order: .forward),
   ]
+  @State private var volumeFreeBytes: Int64?
 
   init(
     navigation: NavigationState,
     listContents: ListContentsUseCase,
     viewMode: FileListViewMode,
-    searchQuery: String
+    searchQuery: String,
+    volumeCapacity: VolumeCapacityUseCase
   ) {
     self.navigation = navigation
     self.viewMode = viewMode
     self.searchQuery = searchQuery
+    self.volumeCapacity = volumeCapacity
     self._viewModel = State(
       initialValue: FileListViewModel(listContents: listContents)
     )
   }
 
   var body: some View {
-    content
-      .task(id: navigation.current) {
-        await viewModel.load(navigation.current)
-      }
+    VStack(spacing: 0) {
+      content
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      Divider()
+
+      StatusBarView(
+        entries: viewModel.entries,
+        selection: viewModel.selection,
+        volumeFreeBytes: volumeFreeBytes
+      )
+    }
+    .task(id: navigation.current) {
+      await viewModel.load(navigation.current)
+    }
+    .task(id: navigation.current) {
+      volumeFreeBytes = await volumeCapacity.freeBytes(at: navigation.current)
+    }
   }
 
   private var trimmedQuery: String {
