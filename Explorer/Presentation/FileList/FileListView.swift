@@ -22,6 +22,8 @@ struct FileListView: View {
     KeyPathComparator(\.name, order: .forward),
   ]
   @State private var volumeFreeBytes: Int64?
+  @State private var selectionAnchor: FSEntry.ID?
+  @FocusState private var paneFocused: Bool
 
   init(
     navigation: NavigationState,
@@ -68,6 +70,121 @@ struct FileListView: View {
       guard !Task.isCancelled, requested == navigation.current else { return }
       volumeFreeBytes = bytes
     }
+    .background(shortcutSink)
+    .focusable()
+    .focused($paneFocused)
+    // Any tap inside the pane (rows, empty area, status bar) claims keyboard
+    // focus so arrow keys / Enter / Backspace land here instead of staying on
+    // the sidebar that triggered the navigation. `simultaneousGesture` shares
+    // the click with the cell handlers so single-/double-click still fire.
+    .simultaneousGesture(
+      TapGesture().onEnded { paneFocused = true }
+    )
+    .onKeyPress(.return) {
+      openFocusedSelection() ? .handled : .ignored
+    }
+    .onKeyPress(.delete) {
+      // Only swallow Backspace when there's actually a parent to navigate to.
+      // Returning .ignored at the root lets the key event propagate so other
+      // handlers (or the system beep) can take it instead of silently no-op.
+      guard navigation.canGoUp else { return .ignored }
+      navigation.goUp()
+      return .handled
+    }
+    .onKeyPress(.upArrow) {
+      moveSelection(by: -1) ? .handled : .ignored
+    }
+    .onKeyPress(.downArrow) {
+      moveSelection(by: +1) ? .handled : .ignored
+    }
+  }
+
+  // Hidden buttons own ⌘+A and ⌘+Shift+C so the shortcuts work whenever the
+  // file list pane is in the responder chain. Kept off `.toolbar` to avoid
+  // reserving slot space (same pattern as `keyboardShortcutSink` in
+  // ContentView for the toolbar shortcuts).
+  private var shortcutSink: some View {
+    Group {
+      Button("Select All", action: selectAll)
+        .keyboardShortcut("a", modifiers: .command)
+      Button("Copy Path", action: copySelectedPaths)
+        .keyboardShortcut("c", modifiers: [.command, .shift])
+    }
+    .opacity(0)
+    .frame(width: 0, height: 0)
+    .accessibilityHidden(true)
+  }
+
+  @discardableResult
+  private func openFocusedSelection() -> Bool {
+    guard viewModel.selection.count == 1,
+          let id = viewModel.selection.first,
+          let entry = viewModel.entries.first(where: { $0.id == id })
+    else { return false }
+    open(entry)
+    return true
+  }
+
+  private func selectAll() {
+    viewModel.selection = Set(sortedEntries.map(\.id))
+    selectionAnchor = sortedEntries.first?.id
+  }
+
+  @discardableResult
+  private func moveSelection(by delta: Int) -> Bool {
+    let ids = sortedEntries.map(\.id)
+    guard !ids.isEmpty else { return false }
+    let currentIdx: Int
+    if let anchor = selectionAnchor, let i = ids.firstIndex(of: anchor) {
+      currentIdx = i
+    } else if let only = viewModel.selection.first,
+              viewModel.selection.count == 1,
+              let i = ids.firstIndex(of: only) {
+      currentIdx = i
+    } else {
+      currentIdx = -1
+    }
+    let nextIdx: Int
+    if currentIdx < 0 {
+      nextIdx = delta > 0 ? 0 : ids.count - 1
+    } else {
+      nextIdx = max(0, min(ids.count - 1, currentIdx + delta))
+    }
+    let target = ids[nextIdx]
+    viewModel.selection = [target]
+    selectionAnchor = target
+    return true
+  }
+
+  private func handleTableTap(on entry: FSEntry) {
+    let flags = NSEvent.modifierFlags
+    let gesture: MultiSelection.Gesture
+    if flags.contains(.command) {
+      gesture = .toggle
+    } else if flags.contains(.shift) {
+      gesture = .range
+    } else {
+      gesture = .plain
+    }
+    let result = MultiSelection.resolve(
+      click: entry.id,
+      gesture: gesture,
+      current: viewModel.selection,
+      anchor: selectionAnchor,
+      orderedIds: sortedEntries.map(\.id)
+    )
+    viewModel.selection = result.selection
+    selectionAnchor = result.anchor
+  }
+
+  private func copySelectedPaths() {
+    let selected = sortedEntries.filter { viewModel.selection.contains($0.id) }
+    guard !selected.isEmpty else { return }
+    let payload = selected
+      .map { $0.url.path(percentEncoded: false) }
+      .joined(separator: "\n")
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.setString(payload, forType: .string)
   }
 
   private var trimmedQuery: String {
@@ -140,15 +257,16 @@ struct FileListView: View {
             .foregroundStyle(entry.isDirectory ? Color.accentColor : .secondary)
         }
         .help(entry.name)
-        // No `.contentShape(Rectangle())` here on purpose: extending the hit
-        // area to the full cell width breaks NSTableView's single-click row
-        // selection — macOS routes the click into the cell's gesture, which
-        // only listens for count==2, so the "select" event is dropped.
-        // `simultaneousGesture` keeps the double-click flowing alongside
-        // the table's own click handling instead of racing with it.
-        .simultaneousGesture(
-          TapGesture(count: 2).onEnded { open(entry) }
-        )
+        // Extend the hit area across the cell so a click anywhere on the row
+        // (not only on the icon/text) drives both single- and double-click
+        // handlers. We bypass NSTableView's own click-to-select and drive the
+        // selection ourselves via `MultiSelection`, which keeps the
+        // single-click hit + double-click open + ⌘/Shift behavior in sync
+        // with the Large icons grid.
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { open(entry) }
+        .onTapGesture { handleTableTap(on: entry) }
       }
 
       TableColumn("Modified", value: \.modificationSortKey) { entry in
