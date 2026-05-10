@@ -6,9 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
-### Changed
-- App icon replaced. Ten macOS slot sizes (16/32/128/256/512 @1x and @2x) generated from the new 1024×1024 master and wired into `AppIcon.appiconset`.
-
 ### Added
 - Sidebar split into two sections: **Quick Access** with the canonical user folders (Desktop, Documents, Downloads, Pictures, Music, Movies) plus Home, and **This Mac** listing currently mounted volumes (boot drive first, then external drives in OS order). The This Mac list refreshes automatically on `NSWorkspace.didMountNotification` / `didUnmountNotification`, so plugging or ejecting an external drive updates the sidebar without restarting the app.
 - `FilesystemRepository.quickAccessLocations` and `FilesystemRepository.mountedVolumes()` plus a new `SidebarSourcesUseCase` exposing both to the presentation layer.
@@ -35,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `FilesystemRepository.subfolders(of:)` now fails with `FilesystemError` instead of the removed `FilesystemRepositoryError.unreadable`.
 - Address bar exits edit mode and restores breadcrumbs when clicking outside the bar's chrome or when its window stops being the key window (app switch, another window taking key), discarding the draft. Previously the field stayed in edit mode until Esc or Enter.
 - Invalid path commits in the address bar now play the system alert beep alongside the existing shake + red border feedback.
+- App icon replaced. Ten macOS slot sizes (16/32/128/256/512 @1x and @2x) generated from the new 1024×1024 master and wired into `AppIcon.appiconset`.
+- Display name shown in Dock, menu bar, and Finder is now "Explorer App" (set via `CFBundleDisplayName` and `CFBundleName`). The on-disk bundle stays `Explorer-App.app` so existing scheme and CI references keep working.
 
 ### Removed
 - `FilesystemRepositoryError` (replaced by `FilesystemError`).
