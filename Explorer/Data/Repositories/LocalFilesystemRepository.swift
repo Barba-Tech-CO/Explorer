@@ -97,13 +97,14 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
       return values?.volumeIsBrowsable ?? true
     }
 
-    // Boot volume first (mounted at "/"), then external drives in OS order.
-    return visible.sorted { lhs, rhs in
-      let lhsRoot = lhs.path == "/"
-      let rhsRoot = rhs.path == "/"
-      if lhsRoot != rhsRoot { return lhsRoot }
-      return false
-    }.map(Folder.init(url:))
+    // Stable partition: pull the boot volume to the front (if present) and
+    // keep the remaining drives in the order macOS reported. `Array.sorted`
+    // isn't stable, so a comparator that treats non-root items as equivalent
+    // would let them shuffle between calls.
+    let bootVolume = visible.first { $0.path == "/" }
+    let externals = visible.filter { $0.path != "/" }
+    let ordered = (bootVolume.map { [$0] } ?? []) + externals
+    return ordered.map(Folder.init(url:))
   }
 
   // MARK: - Private
