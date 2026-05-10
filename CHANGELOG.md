@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Changed
+- App icon replaced. Ten macOS slot sizes (16/32/128/256/512 @1x and @2x) generated from the new 1024×1024 master and wired into `AppIcon.appiconset`.
+
 ### Added
 - Sidebar split into two sections: **Quick Access** with the canonical user folders (Desktop, Documents, Downloads, Pictures, Music, Movies) plus Home, and **This Mac** listing currently mounted volumes (boot drive first, then external drives in OS order). The This Mac list refreshes automatically on `NSWorkspace.didMountNotification` / `didUnmountNotification`, so plugging or ejecting an external drive updates the sidebar without restarting the app.
 - `FilesystemRepository.quickAccessLocations` and `FilesystemRepository.mountedVolumes()` plus a new `SidebarSourcesUseCase` exposing both to the presentation layer.
