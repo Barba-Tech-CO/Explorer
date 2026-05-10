@@ -75,6 +75,22 @@ struct LocalFilesystemRepositoryTests {
     #expect(result == .failure(.notFound))
   }
 
+  // MARK: - volumeFreeBytes
+
+  @Test func volumeFreeBytesReportsAvailableCapacityForTempVolume() async throws {
+    let tmp = try makeTempDirectory()
+    defer { try? FileManager.default.removeItem(at: tmp) }
+
+    let repo = LocalFilesystemRepository()
+    let free = await repo.volumeFreeBytes(at: Folder(url: tmp))
+
+    // The boot volume always reports a non-nil, positive value; the test is
+    // pinned to a temp directory under it so we don't depend on the host's
+    // exact disk state.
+    #expect(free != nil)
+    #expect((free ?? 0) > 0)
+  }
+
   // MARK: - helpers
 
   private func makeTempDirectory() throws -> URL {
