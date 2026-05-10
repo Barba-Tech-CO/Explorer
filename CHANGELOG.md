@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Window toolbar with Back / Forward buttons bound to `NavigationState`. Buttons disable themselves when their respective stacks are empty. Keyboard shortcuts: ⌘+← back, ⌘+→ forward.
 - Toolbar search field that filters the current folder's entries by name (case-insensitive, substring) without leaving the file list. Placeholder reads "Search in <folder>", and the query clears automatically when navigation moves to another folder. Empty result shows a "No matches" placeholder instead of a blank table; an empty folder with no active search shows "This folder is empty".
 - Toolbar segmented picker to switch the file list between Details and Large icons. Large icons mode renders entries as a `LazyVGrid` of 96×96 cells with the entry name underneath; single-click selects, double-click opens, and clicking an empty area clears the selection. Keyboard shortcuts: ⌘+1 Details, ⌘+2 Large icons.
+- Status bar at the bottom of the file list pane: total item count, summary of the current selection (count + total size when sizes are known), and free bytes available on the volume hosting the current folder.
+- `FilesystemRepository.volumeFreeBytes(at:)` and `VolumeCapacityUseCase` exposing volume capacity to the presentation layer through the existing repository abstraction.
 
 ### Changed
 - App Sandbox disabled on Debug and Release configurations; the app now reads the filesystem directly via `FileManager` (matches the chosen non-Mac-App-Store distribution path).
