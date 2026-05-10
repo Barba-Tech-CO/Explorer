@@ -34,4 +34,11 @@ struct FSEntry: Hashable, Identifiable, Sendable {
   }
 
   var id: URL { url }
+
+  /// Convenience projection for entries that point at directories. Lets the
+  /// presentation layer hand a `Folder` to navigation without re-deriving it
+  /// from a raw `URL` at the call site.
+  var folder: Folder? {
+    isDirectory ? Folder(url: url) : nil
+  }
 }

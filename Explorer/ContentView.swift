@@ -2,7 +2,8 @@
 //  ContentView.swift
 //  Explorer
 //
-//  Created by Barba Dz on 5/6/26.
+//  Root window layout: NavigationSplitView with the sidebar on the left and
+//  the address bar + file list on the right.
 //
 
 import SwiftUI
@@ -11,6 +12,7 @@ struct ContentView: View {
   let dependencies: AppDependencies
 
   @State private var navigation: NavigationState
+  @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
   init(dependencies: AppDependencies) {
     self.dependencies = dependencies
@@ -20,6 +22,19 @@ struct ContentView: View {
   }
 
   var body: some View {
+    NavigationSplitView(columnVisibility: $columnVisibility) {
+      SidebarView(
+        navigation: navigation,
+        home: dependencies.repository.home
+      )
+      .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
+    } detail: {
+      detail
+    }
+    .frame(minWidth: 820, minHeight: 520)
+  }
+
+  private var detail: some View {
     VStack(spacing: 0) {
       AddressBarView(
         navigation: navigation,
@@ -31,10 +46,12 @@ struct ContentView: View {
 
       Divider()
 
-      ContentPlaceholderView(folder: navigation.current)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      FileListView(
+        navigation: navigation,
+        listContents: dependencies.listContents
+      )
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .frame(minWidth: 720, minHeight: 480)
   }
 }
 

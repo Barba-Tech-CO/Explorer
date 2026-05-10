@@ -11,6 +11,7 @@ import Foundation
 struct AppDependencies {
   let repository: FilesystemRepository
   let listSubfolders: ListSubfoldersUseCase
+  let listContents: ListContentsUseCase
   let resolvePath: ResolvePathUseCase
 
   static func live() -> AppDependencies {
@@ -18,6 +19,7 @@ struct AppDependencies {
     return AppDependencies(
       repository: repository,
       listSubfolders: ListSubfoldersUseCase(repository: repository),
+      listContents: ListContentsUseCase(repository: repository),
       resolvePath: ResolvePathUseCase(repository: repository)
     )
   }
