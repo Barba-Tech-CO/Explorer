@@ -1,4 +1,4 @@
-clear//
+//
 //  SidebarSourcesUseCaseTests.swift
 //  ExplorerTests
 //
