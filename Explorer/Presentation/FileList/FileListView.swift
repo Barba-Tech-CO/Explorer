@@ -8,9 +8,7 @@
 //
 
 import SwiftUI
-import OSLog
-
-private let log = Logger(subsystem: "Explorer", category: "FileListView")
+import AppKit
 
 struct FileListView: View {
   @Bindable var navigation: NavigationState
@@ -101,8 +99,8 @@ struct FileListView: View {
   }
 
   private func open(_ entry: FSEntry) {
-    if entry.isDirectory {
-      navigation.navigate(to: Folder(url: entry.url))
+    if let folder = entry.folder {
+      navigation.navigate(to: folder)
     } else {
       NSWorkspace.shared.open(entry.url)
     }
