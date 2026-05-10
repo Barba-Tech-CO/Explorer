@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ## [Unreleased]
 
 ### Added
+- File list pane now responds to keyboard navigation: **Enter** opens the single selected entry (folder navigates, file launches via `NSWorkspace`), **Backspace** moves up one level. **⌘+A** selects every visible entry (respecting the current search filter), **⌘+Shift+C** copies the absolute paths of the selection to the clipboard, one per line.
+- Multi-select with consistent rules across both view modes: ⌘+click toggles, Shift+click extends the selection between the previous anchor and the clicked cell, plain click replaces and re-anchors. Details rows now drive the selection through the same `MultiSelection` state machine as Large icons (instead of relying on NSTableView's native click handling), so the hit area covers the whole row in both modes.
 - Sidebar split into two sections: **Quick Access** with the canonical user folders (Desktop, Documents, Downloads, Pictures, Music, Movies) plus Home, and **This Mac** listing currently mounted volumes (boot drive first, then external drives in OS order). The This Mac list refreshes automatically on `NSWorkspace.didMountNotification` / `didUnmountNotification`, so plugging or ejecting an external drive updates the sidebar without restarting the app.
 - `FilesystemRepository.quickAccessLocations` and `FilesystemRepository.mountedVolumes()` plus a new `SidebarSourcesUseCase` exposing both to the presentation layer.
 - Initial project documentation: `README.md`, `CHANGELOG.md`.
