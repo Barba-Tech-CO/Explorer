@@ -12,6 +12,8 @@ import AppKit
 
 struct FileListView: View {
   @Bindable var navigation: NavigationState
+  let viewMode: FileListViewMode
+  let searchQuery: String
 
   @State private var viewModel: FileListViewModel
   @State private var sortOrder: [KeyPathComparator<FSEntry>] = [
@@ -19,8 +21,15 @@ struct FileListView: View {
     KeyPathComparator(\.name, order: .forward),
   ]
 
-  init(navigation: NavigationState, listContents: ListContentsUseCase) {
+  init(
+    navigation: NavigationState,
+    listContents: ListContentsUseCase,
+    viewMode: FileListViewMode,
+    searchQuery: String
+  ) {
     self.navigation = navigation
+    self.viewMode = viewMode
+    self.searchQuery = searchQuery
     self._viewModel = State(
       initialValue: FileListViewModel(listContents: listContents)
     )
@@ -33,6 +42,19 @@ struct FileListView: View {
       }
   }
 
+  private var trimmedQuery: String {
+    searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var hasActiveSearch: Bool { !trimmedQuery.isEmpty }
+
+  private var filteredEntries: [FSEntry] {
+    guard hasActiveSearch else { return viewModel.entries }
+    return viewModel.entries.filter {
+      $0.name.localizedCaseInsensitiveContains(trimmedQuery)
+    }
+  }
+
   @ViewBuilder
   private var content: some View {
     switch viewModel.state {
@@ -42,8 +64,38 @@ struct FileListView: View {
     case .failed(let error):
       FileListFailureView(error: error)
     case .loaded:
-      table
+      loadedContent
     }
+  }
+
+  @ViewBuilder
+  private var loadedContent: some View {
+    if sortedEntries.isEmpty {
+      emptyState
+    } else {
+      switch viewMode {
+      case .details:
+        table
+      case .largeIcons:
+        LargeIconsView(
+          entries: sortedEntries,
+          selection: $viewModel.selection,
+          onOpen: open
+        )
+      }
+    }
+  }
+
+  private var emptyState: some View {
+    VStack(spacing: 6) {
+      Image(systemName: hasActiveSearch ? "magnifyingglass" : "tray")
+        .font(.system(size: 32, weight: .light))
+        .foregroundStyle(.secondary)
+      Text(hasActiveSearch ? "No matches" : "This folder is empty")
+        .font(.headline)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   private var table: some View {
@@ -95,7 +147,7 @@ struct FileListView: View {
   }
 
   private var sortedEntries: [FSEntry] {
-    viewModel.entries.sorted(using: sortOrder)
+    filteredEntries.sorted(using: sortOrder)
   }
 
   private func open(_ entry: FSEntry) {
