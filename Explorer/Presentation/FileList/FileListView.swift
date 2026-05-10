@@ -180,8 +180,12 @@ struct FileListView: View {
   private func copySelectedPaths() {
     let selected = sortedEntries.filter { viewModel.selection.contains($0.id) }
     guard !selected.isEmpty else { return }
+    // For directories prefer `Folder.path` — it strips the trailing slash
+    // consistently across macOS versions, where `URL.path(percentEncoded:)`
+    // disagrees on whether to keep it. Plain files have no `Folder`
+    // projection, so we fall back to the URL form for them.
     let payload = selected
-      .map { $0.url.path(percentEncoded: false) }
+      .map { $0.folder?.path ?? $0.url.path(percentEncoded: false) }
       .joined(separator: "\n")
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(payload, forType: .string)
@@ -265,7 +269,14 @@ struct FileListView: View {
         // with the Large icons grid.
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-        .onTapGesture(count: 2) { open(entry) }
+        // count: 2 takes priority — when it fires, the count: 1 handler is
+        // suppressed. Drive the selection ourselves before opening so a
+        // double-click on a previously unselected row still highlights it
+        // (matches Finder's behavior).
+        .onTapGesture(count: 2) {
+          handleTableTap(on: entry)
+          open(entry)
+        }
         .onTapGesture { handleTableTap(on: entry) }
       }
 
