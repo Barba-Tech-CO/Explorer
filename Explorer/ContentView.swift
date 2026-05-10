@@ -83,7 +83,8 @@ struct ContentView: View {
         navigation: navigation,
         listContents: dependencies.listContents,
         viewMode: viewMode,
-        searchQuery: searchQuery
+        searchQuery: searchQuery,
+        volumeCapacity: dependencies.volumeCapacity
       )
       .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
