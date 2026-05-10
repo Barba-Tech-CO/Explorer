@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Address bar exits edit mode and restores breadcrumbs when clicking outside the bar's chrome or when its window stops being the key window (app switch, another window taking key), discarding the draft. Previously the field stayed in edit mode until Esc or Enter.
 - Invalid path commits in the address bar now play the system alert beep alongside the existing shake + red border feedback.
 - App icon replaced. Ten macOS slot sizes (16/32/128/256/512 @1x and @2x) generated from the new 1024×1024 master and wired into `AppIcon.appiconset`.
-- Display name shown in Dock, menu bar, and Finder is now "Explorer App" (set via `CFBundleDisplayName` and `CFBundleName`). The on-disk bundle stays `Explorer-App.app` so existing scheme and CI references keep working.
+- App renamed to **Explorer App** end-to-end: `PRODUCT_NAME` is now `Explorer App`, so the on-disk bundle is `Explorer App.app` and the Dock, menu bar, and Finder all pick the friendly name from the synthesized `Info.plist`. Scheme `BuildableName`, the `PBXFileReference` path, and `TEST_HOST` updated to match.
 
 ### Removed
 - `FilesystemRepositoryError` (replaced by `FilesystemError`).
