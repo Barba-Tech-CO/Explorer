@@ -13,6 +13,9 @@ struct ContentView: View {
 
   @State private var navigation: NavigationState
   @State private var columnVisibility: NavigationSplitViewVisibility = .all
+  @State private var viewMode: FileListViewMode = .details
+  @State private var searchQuery: String = ""
+  @State private var searchFocusRequest: Bool = false
 
   init(dependencies: AppDependencies) {
     self.dependencies = dependencies
@@ -31,7 +34,37 @@ struct ContentView: View {
     } detail: {
       detail
     }
+    .toolbar {
+      NavigationToolbar(
+        navigation: navigation,
+        viewMode: $viewMode,
+        searchQuery: $searchQuery,
+        searchFocusRequest: $searchFocusRequest,
+        folder: navigation.current
+      )
+    }
+    .background(keyboardShortcutSink)
+    .onChange(of: navigation.current) { _, _ in
+      searchQuery = ""
+    }
     .frame(minWidth: 820, minHeight: 520)
+  }
+
+  // Hidden buttons that own the toolbar's keyboard shortcuts. Kept out of
+  // `.toolbar` so they don't reserve trailing space that would push the
+  // search field away from the window edge.
+  private var keyboardShortcutSink: some View {
+    Group {
+      Button("Details view") { viewMode = .details }
+        .keyboardShortcut("1", modifiers: .command)
+      Button("Large icons view") { viewMode = .largeIcons }
+        .keyboardShortcut("2", modifiers: .command)
+      Button("Focus search") { searchFocusRequest = true }
+        .keyboardShortcut("f", modifiers: .command)
+    }
+    .opacity(0)
+    .frame(width: 0, height: 0)
+    .accessibilityHidden(true)
   }
 
   private var detail: some View {
@@ -48,7 +81,9 @@ struct ContentView: View {
 
       FileListView(
         navigation: navigation,
-        listContents: dependencies.listContents
+        listContents: dependencies.listContents,
+        viewMode: viewMode,
+        searchQuery: searchQuery
       )
       .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
