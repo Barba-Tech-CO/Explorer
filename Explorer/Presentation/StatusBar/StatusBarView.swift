@@ -45,8 +45,12 @@ struct StatusBarView: View {
     let count = selected.count == 1
       ? "1 selected"
       : "\(selected.count) selected"
-    let totalBytes = selected.reduce(Int64(0)) { $0 + ($1.size ?? 0) }
-    guard totalBytes > 0 else { return count }
+    // Drop entries with unknown size (directories report `nil` by design) so
+    // a directory-only selection collapses to count, while an empty file
+    // still surfaces as "0 bytes".
+    let knownSizes = selected.compactMap(\.size)
+    guard !knownSizes.isEmpty else { return count }
+    let totalBytes = knownSizes.reduce(0, +)
     return "\(count) · \(format(bytes: totalBytes))"
   }
 
