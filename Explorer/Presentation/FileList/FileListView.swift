@@ -56,7 +56,17 @@ struct FileListView: View {
       await viewModel.load(navigation.current)
     }
     .task(id: navigation.current) {
-      volumeFreeBytes = await volumeCapacity.freeBytes(at: navigation.current)
+      // Reset before awaiting so the previous folder's value isn't shown
+      // alongside the new folder while the new lookup is in flight.
+      volumeFreeBytes = nil
+      let requested = navigation.current
+      let bytes = await volumeCapacity.freeBytes(at: requested)
+      // Guard against a stale write: `URL.resourceValues` isn't cancellable,
+      // so a fast back-and-forth navigation can let the previous fetch
+      // resolve after the task was cancelled and overwrite the new folder's
+      // value.
+      guard !Task.isCancelled, requested == navigation.current else { return }
+      volumeFreeBytes = bytes
     }
   }
 
