@@ -14,6 +14,7 @@ struct AppDependencies {
   let listContents: ListContentsUseCase
   let resolvePath: ResolvePathUseCase
   let volumeCapacity: VolumeCapacityUseCase
+  let sidebarSources: SidebarSourcesUseCase
 
   static func live() -> AppDependencies {
     let repository = LocalFilesystemRepository()
@@ -22,7 +23,8 @@ struct AppDependencies {
       listSubfolders: ListSubfoldersUseCase(repository: repository),
       listContents: ListContentsUseCase(repository: repository),
       resolvePath: ResolvePathUseCase(repository: repository),
-      volumeCapacity: VolumeCapacityUseCase(repository: repository)
+      volumeCapacity: VolumeCapacityUseCase(repository: repository),
+      sidebarSources: SidebarSourcesUseCase(repository: repository)
     )
   }
 }

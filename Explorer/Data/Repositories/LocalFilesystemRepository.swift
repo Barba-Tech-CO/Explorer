@@ -21,6 +21,26 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
     Folder(url: fileManager.homeDirectoryForCurrentUser)
   }
 
+  var quickAccessLocations: [Folder] {
+    let directories: [FileManager.SearchPathDirectory] = [
+      .desktopDirectory,
+      .documentDirectory,
+      .downloadsDirectory,
+      .picturesDirectory,
+      .musicDirectory,
+      .moviesDirectory,
+    ]
+    return directories.compactMap { directory in
+      guard let url = try? fileManager.url(
+        for: directory,
+        in: .userDomainMask,
+        appropriateFor: nil,
+        create: false
+      ) else { return nil }
+      return Folder(url: url)
+    }
+  }
+
   func entryKind(at url: URL) async -> FilesystemEntryKind {
     var isDir: ObjCBool = false
     let exists = fileManager.fileExists(
@@ -58,6 +78,33 @@ final class LocalFilesystemRepository: FilesystemRepository, @unchecked Sendable
       forKeys: [.volumeAvailableCapacityKey]
     )
     return values?.volumeAvailableCapacity.map { Int64($0) }
+  }
+
+  func mountedVolumes() async -> [Folder] {
+    let urls = fileManager.mountedVolumeURLs(
+      includingResourceValuesForKeys: [
+        .volumeIsInternalKey,
+        .volumeNameKey,
+        .volumeIsBrowsableKey,
+      ],
+      options: [.skipHiddenVolumes]
+    ) ?? []
+
+    let visible = urls.filter { url in
+      // Skip non-browsable volumes (e.g., the recovery image, hidden system
+      // partitions). The internal boot volume always passes both filters.
+      let values = try? url.resourceValues(forKeys: [.volumeIsBrowsableKey])
+      return values?.volumeIsBrowsable ?? true
+    }
+
+    // Stable partition: pull the boot volume to the front (if present) and
+    // keep the remaining drives in the order macOS reported. `Array.sorted`
+    // isn't stable, so a comparator that treats non-root items as equivalent
+    // would let them shuffle between calls.
+    let bootVolume = visible.first { $0.path == "/" }
+    let externals = visible.filter { $0.path != "/" }
+    let ordered = (bootVolume.map { [$0] } ?? []) + externals
+    return ordered.map(Folder.init(url:))
   }
 
   // MARK: - Private

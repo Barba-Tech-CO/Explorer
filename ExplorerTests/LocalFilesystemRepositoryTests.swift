@@ -91,6 +91,33 @@ struct LocalFilesystemRepositoryTests {
     #expect((free ?? 0) > 0)
   }
 
+  // MARK: - quickAccessLocations
+
+  @Test func quickAccessLocationsReturnsSixWellKnownFolders() {
+    let repo = LocalFilesystemRepository()
+
+    let locations = repo.quickAccessLocations.map(\.name)
+
+    #expect(locations.count == 6)
+    #expect(locations.contains("Desktop"))
+    #expect(locations.contains("Documents"))
+    #expect(locations.contains("Downloads"))
+    #expect(locations.contains("Pictures"))
+    #expect(locations.contains("Music"))
+    #expect(locations.contains("Movies"))
+  }
+
+  // MARK: - mountedVolumes
+
+  @Test func mountedVolumesIncludesBootVolumeFirst() async {
+    let repo = LocalFilesystemRepository()
+
+    let volumes = await repo.mountedVolumes()
+
+    #expect(!volumes.isEmpty)
+    #expect(volumes.first?.path == "/")
+  }
+
   // MARK: - helpers
 
   private func makeTempDirectory() throws -> URL {
