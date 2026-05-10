@@ -16,4 +16,8 @@ protocol FilesystemRepository: Sendable {
   func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError>
 
   func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError>
+
+  /// Bytes still writable on the volume that hosts `folder`. `nil` when the
+  /// information isn't available (unmounted volume, transient I/O failure).
+  func volumeFreeBytes(at folder: Folder) async -> Int64?
 }
