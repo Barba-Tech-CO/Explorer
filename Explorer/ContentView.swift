@@ -29,7 +29,8 @@ struct ContentView: View {
     NavigationSplitView(columnVisibility: $columnVisibility) {
       SidebarView(
         navigation: navigation,
-        sources: dependencies.sidebarSources
+        sources: dependencies.sidebarSources,
+        listSubfolders: dependencies.listSubfolders
       )
       .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
     } detail: {
