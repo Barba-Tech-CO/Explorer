@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ## [Unreleased]
 
 ### Added
+- Sidebar entries expand into their subfolders. The disclosure triangle only opens the branch — navigation still happens by clicking the row — so browsing the tree never moves the user out of the current folder. Subfolders are listed the moment a node opens and dropped when it closes, so reopening a branch always reflects what is on disk now. A folder the app can't read opens to nothing; the file list still explains the failure when the user navigates into it.
 - Toolbar button to move up one level, bound to **⌘+↑**. It disables itself only at the filesystem root `/`; from a mounted volume's root it moves into `/Volumes`, which is a real directory the app lists like any other. Backspace already moved up when the file list had focus; ⌘+↑ works from anywhere in the window, including while the sidebar holds focus.
 - Toolbar refresh button re-lists the current folder, bound to **⌘+R** and **F5**. The refresh keeps the existing rows on screen instead of flashing a spinner, and the selection survives it: entries that still exist stay selected, entries deleted or renamed on disk since the last listing drop out.
 - File list pane now responds to keyboard navigation: **Enter** opens the single selected entry (folder navigates, file launches via `NSWorkspace`), **Backspace** moves up one level. **⌘+A** selects every visible entry (respecting the current search filter), **⌘+Shift+C** copies the absolute paths of the selection to the clipboard, one per line.

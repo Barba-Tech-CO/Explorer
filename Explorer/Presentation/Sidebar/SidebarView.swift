@@ -17,6 +17,19 @@ struct SidebarView: View {
   let sources: SidebarSourcesUseCase
 
   @State private var volumes: [Folder] = []
+  @State private var tree: SidebarTreeViewModel
+
+  init(
+    navigation: NavigationState,
+    sources: SidebarSourcesUseCase,
+    listSubfolders: ListSubfoldersUseCase
+  ) {
+    self.navigation = navigation
+    self.sources = sources
+    self._tree = State(
+      initialValue: SidebarTreeViewModel(listSubfolders: listSubfolders)
+    )
+  }
 
   private let mountNotification = NSWorkspace.shared
     .notificationCenter.publisher(for: NSWorkspace.didMountNotification)
@@ -26,17 +39,17 @@ struct SidebarView: View {
   var body: some View {
     List(selection: navigationSelection) {
       Section("Quick Access") {
-        SidebarRow(folder: sources.home, icon: "house")
+        SidebarNodeView(folder: sources.home, icon: "house", tree: tree)
           .tag(sources.home)
         ForEach(sources.quickAccess) { folder in
-          SidebarRow(folder: folder, icon: icon(for: folder))
+          SidebarNodeView(folder: folder, icon: icon(for: folder), tree: tree)
             .tag(folder)
         }
       }
 
       Section("This Mac") {
         ForEach(volumes) { volume in
-          SidebarRow(folder: volume, icon: icon(forVolume: volume))
+          SidebarNodeView(folder: volume, icon: icon(forVolume: volume), tree: tree)
             .tag(volume)
         }
       }
@@ -81,15 +94,5 @@ struct SidebarView: View {
 
   private func icon(forVolume folder: Folder) -> String {
     folder.path == "/" ? "internaldrive" : "externaldrive"
-  }
-}
-
-private struct SidebarRow: View {
-  let folder: Folder
-  let icon: String
-
-  var body: some View {
-    Label(folder.name, systemImage: icon)
-      .help(folder.path)
   }
 }
