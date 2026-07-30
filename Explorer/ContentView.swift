@@ -16,6 +16,7 @@ struct ContentView: View {
   @State private var viewMode: FileListViewMode = .details
   @State private var searchQuery: String = ""
   @State private var searchFocusRequest: Bool = false
+  @State private var refreshRequest: Bool = false
 
   init(dependencies: AppDependencies) {
     self.dependencies = dependencies
@@ -40,6 +41,7 @@ struct ContentView: View {
         viewMode: $viewMode,
         searchQuery: $searchQuery,
         searchFocusRequest: $searchFocusRequest,
+        refreshRequest: $refreshRequest,
         folder: navigation.current
       )
     }
@@ -61,6 +63,12 @@ struct ContentView: View {
         .keyboardShortcut("2", modifiers: .command)
       Button("Focus search") { searchFocusRequest = true }
         .keyboardShortcut("f", modifiers: .command)
+      // Second binding for the same action: the toolbar button owns ⌘+R,
+      // and macOS also expects F5 (0xF708 in the private-use area, matching
+      // NSF5FunctionKey). A view can only carry one shortcut, so F5 lives
+      // here rather than on the button.
+      Button("Refresh") { refreshRequest = true }
+        .keyboardShortcut(KeyEquivalent("\u{F708}"), modifiers: [])
     }
     .opacity(0)
     .frame(width: 0, height: 0)
@@ -84,6 +92,7 @@ struct ContentView: View {
         listContents: dependencies.listContents,
         viewMode: viewMode,
         searchQuery: searchQuery,
+        refreshRequest: $refreshRequest,
         volumeCapacity: dependencies.volumeCapacity
       )
       .frame(maxWidth: .infinity, maxHeight: .infinity)

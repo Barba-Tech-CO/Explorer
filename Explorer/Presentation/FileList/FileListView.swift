@@ -14,6 +14,7 @@ struct FileListView: View {
   @Bindable var navigation: NavigationState
   let viewMode: FileListViewMode
   let searchQuery: String
+  @Binding var refreshRequest: Bool
   let volumeCapacity: VolumeCapacityUseCase
 
   @State private var viewModel: FileListViewModel
@@ -30,11 +31,13 @@ struct FileListView: View {
     listContents: ListContentsUseCase,
     viewMode: FileListViewMode,
     searchQuery: String,
+    refreshRequest: Binding<Bool>,
     volumeCapacity: VolumeCapacityUseCase
   ) {
     self.navigation = navigation
     self.viewMode = viewMode
     self.searchQuery = searchQuery
+    self._refreshRequest = refreshRequest
     self.volumeCapacity = volumeCapacity
     self._viewModel = State(
       initialValue: FileListViewModel(listContents: listContents)
@@ -69,6 +72,17 @@ struct FileListView: View {
       // value.
       guard !Task.isCancelled, requested == navigation.current else { return }
       volumeFreeBytes = bytes
+    }
+    .task(id: refreshRequest) {
+      // Consume the one-shot request raised by the toolbar button / ⌘+R / F5.
+      // Driven by `.task` rather than `.onChange` so the work is tied to the
+      // view's lifetime and gets cancelled if the pane goes away mid-listing.
+      // Re-pressing while a refresh is in flight writes `true` over `true`,
+      // which leaves the id untouched and is deliberately swallowed: the
+      // listing already running is the one the user wants.
+      guard refreshRequest else { return }
+      await viewModel.load(navigation.current, refreshing: true)
+      refreshRequest = false
     }
     .background(shortcutSink)
     .focusable()

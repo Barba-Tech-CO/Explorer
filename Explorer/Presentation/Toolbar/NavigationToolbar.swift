@@ -16,6 +16,7 @@ struct NavigationToolbar: ToolbarContent {
   @Binding var viewMode: FileListViewMode
   @Binding var searchQuery: String
   @Binding var searchFocusRequest: Bool
+  @Binding var refreshRequest: Bool
   let folder: Folder
 
   var body: some ToolbarContent {
@@ -33,6 +34,12 @@ struct NavigationToolbar: ToolbarContent {
       .help("Forward")
       .disabled(!navigation.canGoForward)
       .keyboardShortcut(.rightArrow, modifiers: .command)
+
+      Button { refreshRequest = true } label: {
+        Image(systemName: "arrow.clockwise")
+      }
+      .help("Refresh")
+      .keyboardShortcut("r", modifiers: .command)
     }
 
     ToolbarItemGroup(placement: .primaryAction) {
