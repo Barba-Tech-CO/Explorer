@@ -35,6 +35,14 @@ struct NavigationToolbar: ToolbarContent {
       .disabled(!navigation.canGoForward)
       .keyboardShortcut(.rightArrow, modifiers: .command)
 
+      Button(action: navigation.goUp) {
+        Label("Up", systemImage: "chevron.up")
+      }
+      .labelStyle(.iconOnly)
+      .help("Up")
+      .disabled(!navigation.canGoUp)
+      .keyboardShortcut(.upArrow, modifiers: .command)
+
       // `Label` rather than a bare `Image` so VoiceOver announces "Refresh"
       // instead of deriving a name from the SF Symbol ("arrow clockwise").
       // `.help` only feeds the tooltip and the accessibility help, not the name.
