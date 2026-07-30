@@ -35,9 +35,13 @@ struct NavigationToolbar: ToolbarContent {
       .disabled(!navigation.canGoForward)
       .keyboardShortcut(.rightArrow, modifiers: .command)
 
+      // `Label` rather than a bare `Image` so VoiceOver announces "Refresh"
+      // instead of deriving a name from the SF Symbol ("arrow clockwise").
+      // `.help` only feeds the tooltip and the accessibility help, not the name.
       Button { refreshRequest = true } label: {
-        Image(systemName: "arrow.clockwise")
+        Label("Refresh", systemImage: "arrow.clockwise")
       }
+      .labelStyle(.iconOnly)
       .help("Refresh")
       .keyboardShortcut("r", modifiers: .command)
     }
