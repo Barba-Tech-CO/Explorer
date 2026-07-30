@@ -102,4 +102,30 @@ struct MultiSelectionTests {
     #expect(r.selection == [ids[3]])
     #expect(r.anchor == ids[3])
   }
+
+  @Test func reconcileKeepsSelectionThatSurvivedTheRefresh() {
+    let kept = MultiSelection.reconcile(
+      selection: [ids[1], ids[3]],
+      against: ids
+    )
+    #expect(kept == [ids[1], ids[3]])
+  }
+
+  @Test func reconcileDropsIdsMissingFromTheNewListing() {
+    // `b` and `d` were deleted on disk between listings.
+    let remaining = [ids[0], ids[2], ids[4]]
+    let kept = MultiSelection.reconcile(
+      selection: [ids[1], ids[2], ids[3]],
+      against: remaining
+    )
+    #expect(kept == [ids[2]])
+  }
+
+  @Test func reconcileYieldsEmptyWhenNothingSurvives() {
+    let kept = MultiSelection.reconcile(
+      selection: [ids[0], ids[1]],
+      against: [ids[4]]
+    )
+    #expect(kept.isEmpty)
+  }
 }

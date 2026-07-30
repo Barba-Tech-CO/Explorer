@@ -16,6 +16,7 @@ struct NavigationToolbar: ToolbarContent {
   @Binding var viewMode: FileListViewMode
   @Binding var searchQuery: String
   @Binding var searchFocusRequest: Bool
+  @Binding var refreshRequest: Bool
   let folder: Folder
 
   var body: some ToolbarContent {
@@ -33,6 +34,16 @@ struct NavigationToolbar: ToolbarContent {
       .help("Forward")
       .disabled(!navigation.canGoForward)
       .keyboardShortcut(.rightArrow, modifiers: .command)
+
+      // `Label` rather than a bare `Image` so VoiceOver announces "Refresh"
+      // instead of deriving a name from the SF Symbol ("arrow clockwise").
+      // `.help` only feeds the tooltip and the accessibility help, not the name.
+      Button { refreshRequest = true } label: {
+        Label("Refresh", systemImage: "arrow.clockwise")
+      }
+      .labelStyle(.iconOnly)
+      .help("Refresh")
+      .keyboardShortcut("r", modifiers: .command)
     }
 
     ToolbarItemGroup(placement: .primaryAction) {
