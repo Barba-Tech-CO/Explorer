@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ## [Unreleased]
 
 ### Added
+- Toolbar button to move up one level, bound to **⌘+↑**. It disables itself at the root of a volume, matching the Back / Forward buttons. Backspace already moved up when the file list had focus; ⌘+↑ works from anywhere in the window, including while the sidebar holds focus.
 - Toolbar refresh button re-lists the current folder, bound to **⌘+R** and **F5**. The refresh keeps the existing rows on screen instead of flashing a spinner, and the selection survives it: entries that still exist stay selected, entries deleted or renamed on disk since the last listing drop out.
 - File list pane now responds to keyboard navigation: **Enter** opens the single selected entry (folder navigates, file launches via `NSWorkspace`), **Backspace** moves up one level. **⌘+A** selects every visible entry (respecting the current search filter), **⌘+Shift+C** copies the absolute paths of the selection to the clipboard, one per line.
 - Multi-select with consistent rules across both view modes: ⌘+click toggles, Shift+click extends the selection between the previous anchor and the clicked cell, plain click replaces and re-anchors. Details rows now drive the selection through the same `MultiSelection` state machine as Large icons (instead of relying on NSTableView's native click handling), so the hit area covers the whole row in both modes.
