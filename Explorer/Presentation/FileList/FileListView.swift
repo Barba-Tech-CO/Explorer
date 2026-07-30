@@ -87,6 +87,11 @@ struct FileListView: View {
     .background(shortcutSink)
     .focusable()
     .focused($paneFocused)
+    // The pane is focusable only so arrow keys / Enter / Backspace route
+    // here — it isn't a control the user tabs onto. Without this, macOS
+    // draws its focus ring around the whole VStack and the user sees a blue
+    // line framing the file list whenever they click a row.
+    .focusEffectDisabled()
     // Any tap inside the pane (rows, empty area, status bar) claims keyboard
     // focus so arrow keys / Enter / Backspace land here instead of staying on
     // the sidebar that triggered the navigation. `simultaneousGesture` shares
