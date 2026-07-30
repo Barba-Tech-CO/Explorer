@@ -33,8 +33,13 @@ struct SidebarNodeView: View {
       get: { tree.isExpanded(folder) },
       // The setter can't await, so the listing is kicked off in a task. The
       // view model guards against a collapse landing before the listing does.
+      // Pinned to the main actor like `AddressBarView`'s commit task: an
+      // unstructured `Task {}` doesn't inherit the View's isolation, so it
+      // would start off the main actor and hop only on the first `await`.
       set: { isExpanded in
-        Task { await tree.setExpanded(isExpanded, for: folder) }
+        Task { @MainActor in
+          await tree.setExpanded(isExpanded, for: folder)
+        }
       }
     )
   }
