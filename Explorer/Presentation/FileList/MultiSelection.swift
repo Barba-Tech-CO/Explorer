@@ -64,4 +64,28 @@ enum MultiSelection {
       return Result(selection: next, anchor: anchor ?? id)
     }
   }
+
+  /// Carry a selection across a refresh of the same folder.
+  ///
+  /// A refresh re-lists the folder the user is already standing in, so the
+  /// selection should survive it — but entries may have been renamed, moved,
+  /// or deleted on disk since the last listing. Callers already filter the
+  /// selection against the visible rows, so a stale id renders nothing; the
+  /// cost is a selection that silently disagrees with the rows and can
+  /// resurrect later if the same path reappears.
+  ///
+  /// The policy is Finder's: keep everything that still exists, drop the rest.
+  /// Ids are absolute URLs, so a renamed or moved entry reads as deleted and
+  /// falls out — correct, since the row the user picked is genuinely gone.
+  ///
+  /// - Parameters:
+  ///   - selection: the ids selected before the refresh.
+  ///   - availableIds: the ids present in the freshly listed entries.
+  /// - Returns: the selection to apply after the refresh.
+  static func reconcile(
+    selection: Set<FSEntry.ID>,
+    against availableIds: some Sequence<FSEntry.ID>
+  ) -> Set<FSEntry.ID> {
+    selection.intersection(availableIds)
+  }
 }
