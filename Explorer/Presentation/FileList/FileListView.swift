@@ -110,11 +110,20 @@ struct FileListView: View {
       navigation.goUp()
       return .handled
     }
-    .onKeyPress(.upArrow) {
-      moveSelection(by: -1) ? .handled : .ignored
-    }
-    .onKeyPress(.downArrow) {
-      moveSelection(by: +1) ? .handled : .ignored
+    // `onKeyPress(keys:)` rather than one handler per arrow: the single-key
+    // overload matches the key whatever modifiers are held, so it would also
+    // swallow ⌘+↑ (go up a level) and move the selection at the same time.
+    // This overload hands over the `KeyPress`, so modified arrows can be left
+    // for the toolbar's key equivalents to claim.
+    .onKeyPress(keys: [.upArrow, .downArrow]) { press in
+      // Tested against the intent modifiers only, never `isEmpty`: AppKit
+      // tags arrow keys with `.function` / `.numericPad`, so an emptiness
+      // check would reject a plain arrow and kill keyboard navigation.
+      guard press.modifiers.isDisjoint(with: [.command, .control, .option]) else {
+        return .ignored
+      }
+      let delta = press.key == .upArrow ? -1 : 1
+      return moveSelection(by: delta) ? .handled : .ignored
     }
   }
 
