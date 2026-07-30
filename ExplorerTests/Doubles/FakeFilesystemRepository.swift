@@ -22,6 +22,10 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   /// flight — the only way to assert on transient states like `.loading`.
   var onListContents: (@MainActor () -> Void)?
 
+  /// Same idea as `onListContents`, for the subfolder listing the sidebar
+  /// tree uses. Lets a test collapse a node while its expansion is in flight.
+  var onSubfolders: (@MainActor () -> Void)?
+
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
   }
@@ -34,7 +38,10 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   }
 
   func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError> {
-    stubbedSubfolders[Self.normalize(folder.path)] ?? .success([])
+    if let hook = onSubfolders {
+      await MainActor.run { hook() }
+    }
+    return stubbedSubfolders[Self.normalize(folder.path)] ?? .success([])
   }
 
   func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
