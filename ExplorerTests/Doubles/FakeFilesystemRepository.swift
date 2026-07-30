@@ -23,8 +23,9 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   var onListContents: (@MainActor () -> Void)?
 
   /// Same idea as `onListContents`, for the subfolder listing the sidebar
-  /// tree uses. Lets a test collapse a node while its expansion is in flight.
-  var onSubfolders: (@MainActor () -> Void)?
+  /// tree uses, but `async`: a test can drive a whole second expansion from
+  /// inside the hook, so the first listing deterministically resumes last.
+  var onSubfolders: (@MainActor () async -> Void)?
 
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
@@ -38,10 +39,15 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   }
 
   func subfolders(of folder: Folder) async -> Result<[Folder], FilesystemError> {
+    // Resolved before the hook runs, so a hook that re-stubs this folder
+    // affects the *next* call rather than retroactively changing the answer
+    // this one is already committed to — the way a real listing behaves once
+    // it has read the directory.
+    let result = stubbedSubfolders[Self.normalize(folder.path)] ?? .success([])
     if let hook = onSubfolders {
-      await MainActor.run { hook() }
+      await hook()
     }
-    return stubbedSubfolders[Self.normalize(folder.path)] ?? .success([])
+    return result
   }
 
   func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
