@@ -44,7 +44,12 @@ final class FileListViewModel {
   func load(_ folder: Folder, refreshing: Bool = false) async {
     let token = UUID()
     loadToken = token
-    if !refreshing {
+    // Skipping the spinner is only earned when there are rows on screen worth
+    // preserving. Refreshing out of `.idle`/`.failed` has nothing to keep, and
+    // sitting on the error view for the whole retry hides that the retry is
+    // even running — the one moment the user most needs the feedback.
+    let preservesRows = refreshing && state == .loaded
+    if !preservesRows {
       state = .loading
       selection = []
     }
@@ -53,7 +58,7 @@ final class FileListViewModel {
     switch result {
     case .success(let items):
       entries = items
-      if refreshing {
+      if preservesRows {
         // `lazy` so a 10k-entry folder doesn't materialize a second array of
         // URLs just to be walked once by the intersection.
         selection = MultiSelection.reconcile(

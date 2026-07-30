@@ -81,6 +81,20 @@ struct FileListViewModelTests {
     #expect(viewModel.selection.isEmpty)
   }
 
+  @Test func refreshOutOfAFailedListingDoesNotKeepTheFailureState() async {
+    let (viewModel, repository) = makeViewModel(contents: .failure(.denied))
+    await viewModel.load(folder)
+    #expect(viewModel.state == .failed(.denied))
+
+    // Retrying after the user grants access: the pane must end up showing the
+    // rows, not the stale error.
+    repository.stubbedContents[folder.path] = .success([entry("a")])
+    await viewModel.load(folder, refreshing: true)
+
+    #expect(viewModel.state == .loaded)
+    #expect(viewModel.entries.map(\.name) == ["a"])
+  }
+
   @Test func refreshPicksUpRowsAddedSinceTheLastListing() async {
     let (viewModel, repository) = makeViewModel(contents: .success([entry("a")]))
     await viewModel.load(folder)
