@@ -17,6 +17,11 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   var stubbedQuickAccessLocations: [Folder] = []
   var stubbedMountedVolumes: [Folder] = []
 
+  /// Runs on the main actor inside `listContents(of:)`, before the stub is
+  /// returned. Lets a test inspect view-model state while a load is still in
+  /// flight — the only way to assert on transient states like `.loading`.
+  var onListContents: (@MainActor () -> Void)?
+
   init(home: Folder = Folder(path: "/Users/test")) {
     self.stubbedHome = home
   }
@@ -33,7 +38,10 @@ final class FakeFilesystemRepository: FilesystemRepository, @unchecked Sendable 
   }
 
   func listContents(of folder: Folder) async -> Result<[FSEntry], FilesystemError> {
-    stubbedContents[Self.normalize(folder.path)] ?? .success([])
+    if let hook = onListContents {
+      await MainActor.run { hook() }
+    }
+    return stubbedContents[Self.normalize(folder.path)] ?? .success([])
   }
 
   func volumeFreeBytes(at folder: Folder) async -> Int64? {

@@ -95,6 +95,41 @@ struct FileListViewModelTests {
     #expect(viewModel.entries.map(\.name) == ["a"])
   }
 
+  /// Box so the probe can be written from the repository hook without the
+  /// closure capturing a mutable local.
+  private final class StateProbe {
+    var observed: FileListViewModel.LoadState?
+  }
+
+  @Test func refreshOutOfAFailedListingShowsTheSpinnerWhileRelisting() async {
+    let (viewModel, repository) = makeViewModel(contents: .failure(.denied))
+    await viewModel.load(folder)
+    #expect(viewModel.state == .failed(.denied))
+
+    let probe = StateProbe()
+    repository.stubbedContents[folder.path] = .success([entry("a")])
+    repository.onListContents = { [weak viewModel] in probe.observed = viewModel?.state }
+
+    await viewModel.load(folder, refreshing: true)
+
+    // There were no rows to preserve, so the retry must swap to the spinner
+    // instead of sitting on the error view for the whole listing.
+    #expect(probe.observed == .loading)
+  }
+
+  @Test func refreshWithRowsOnScreenNeverShowsTheSpinner() async {
+    let (viewModel, repository) = makeViewModel(contents: .success([entry("a")]))
+    await viewModel.load(folder)
+    #expect(viewModel.state == .loaded)
+
+    let probe = StateProbe()
+    repository.onListContents = { [weak viewModel] in probe.observed = viewModel?.state }
+
+    await viewModel.load(folder, refreshing: true)
+
+    #expect(probe.observed == .loaded)
+  }
+
   @Test func refreshPicksUpRowsAddedSinceTheLastListing() async {
     let (viewModel, repository) = makeViewModel(contents: .success([entry("a")]))
     await viewModel.load(folder)
