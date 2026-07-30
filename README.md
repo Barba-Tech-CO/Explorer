@@ -37,11 +37,37 @@ open Explorer.xcodeproj
 
 Then run the `Explorer` target from Xcode (`⌘+R`). Local builds **do not require code signing** or notarization — only public releases go through that pipeline.
 
+To build and test from the command line instead:
+
+```bash
+xcodebuild test -project Explorer.xcodeproj -scheme Explorer \
+  -destination 'platform=macOS' -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY=""
+```
+
+To produce an unsigned `.dmg` without an Apple Developer account:
+
+```bash
+./scripts/release.sh --skip-signing
+```
+
+The result lands in `.build/release/` and is **not distributable** — Gatekeeper rejects it on any other machine.
+
 ## Distribution
 
 - **Not published on the Mac App Store** (deliberate decision — no sandbox).
 - Releases ship via [GitHub Releases](../../releases) as **signed (Developer ID) + notarized + stapled** builds, so they open cleanly on first launch without a Gatekeeper warning.
 - Homebrew Cask distribution is planned for later.
+
+`scripts/release.sh` runs the whole pipeline: Release build → `codesign` with the hardened runtime → `.dmg` → notarization → stapling. It reads two environment variables and no secrets of its own:
+
+```bash
+export DEVELOPER_ID="Developer ID Application: Your Name (ABCDE12345)"
+export NOTARY_PROFILE="explorer-notary"
+./scripts/release.sh
+```
+
+`NOTARY_PROFILE` names a keychain profile created once with `xcrun notarytool store-credentials`, so the app-specific password stays in the keychain instead of the environment or shell history. Missing credentials fail during preflight, before the build starts.
 
 ## Roadmap at a glance
 
